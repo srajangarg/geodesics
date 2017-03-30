@@ -9,7 +9,7 @@
 
 // Forward declaration
 class Mesh;
-class MeshVertex;
+class Vertex;
 
 /* Displays an object using OpenGL and GLUT. */
 class Viewer
@@ -28,7 +28,7 @@ private:
     static int drag_start_x, drag_start_y;
     static bool show_bbox;
     static bool show_edges;
-    static MeshVertex const *highlighted_vertex;
+    static Vertex const *highlighted_vertex;
 
 public:
     /** Set the object to be displayed. The object must persist as long as the

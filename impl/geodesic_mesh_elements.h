@@ -24,7 +24,7 @@ typedef Mesh *mesh_pointer;
 typedef MeshElementBase *base_pointer;
 
 template <class Data> // simple vector that stores info about mesh references
-class SimpleVector // for efficiency, it uses an outside memory allocator
+class SimpleVector    // for efficiency, it uses an outside memory allocator
 {
 public:
     SimpleVector() : m_size(0), m_begin(NULL){};
@@ -104,10 +104,10 @@ public:
 
 protected:
     vertex_pointer_vector m_adjacent_vertices; // list of the adjacent vertices
-    edge_pointer_vector m_adjacent_edges; // list of the adjacent edges
-    face_pointer_vector m_adjacent_faces; // list of the adjacent faces
+    edge_pointer_vector m_adjacent_edges;      // list of the adjacent edges
+    face_pointer_vector m_adjacent_faces;      // list of the adjacent faces
 
-    unsigned m_id; // unique id
+    unsigned m_id;    // unique id
     PointType m_type; // vertex, edge or face
 };
 

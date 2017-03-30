@@ -9,8 +9,8 @@
 //
 //============================================================================
 
-#ifndef __A2_MeshVertex_hpp__
-#define __A2_MeshVertex_hpp__
+#ifndef __A2_Vertex_hpp__
+#define __A2_Vertex_hpp__
 
 #include "Common.hpp"
 #include "DGP/Colors.hpp"
@@ -18,92 +18,60 @@
 #include <list>
 
 // Forward declarations
-class MeshEdge;
-class MeshFace;
+class Edge;
+class Face;
 
 /** Vertex of a mesh. */
-class MeshVertex
+class Vertex
 {
 public:
-    typedef MeshEdge Edge; ///< Edge of the mesh.
-    typedef MeshFace Face; ///< Face of the mesh.
-
-private:
-    typedef std::list<Edge *> EdgeList;
-    typedef std::list<Face *> FaceList;
-
-public:
-    typedef typename EdgeList::iterator EdgeIterator; ///< Iterator over edges.
-    typedef typename EdgeList::const_iterator
-        EdgeConstIterator; ///< Const iterator over edges.
-    typedef typename FaceList::iterator FaceIterator; ///< Iterator over faces.
-    typedef typename FaceList::const_iterator
-        FaceConstIterator; ///< Const iterator over faces.
-
     /** Default constructor. */
-    MeshVertex()
+    Vertex()
         : position(Vector3::zero()), normal(Vector3::zero()),
           color(ColorRGBA(1, 1, 1, 1)), has_precomputed_normal(false),
-          normal_normalization_factor(0), quadric(DMat4::zero())
+          normal_normalization_factor(0)
     {
     }
 
     /** Sets the vertex to have a given location. */
-    explicit MeshVertex(Vector3 const &p)
+    explicit Vertex(Vector3 const &p)
         : position(p), normal(Vector3::zero()), color(ColorRGBA(1, 1, 1, 1)),
-          has_precomputed_normal(false), normal_normalization_factor(0),
-          quadric(DMat4::zero())
+          has_precomputed_normal(false), normal_normalization_factor(0)
     {
     }
 
     /** Sets the vertex to have a location, normal and color. */
-    MeshVertex(Vector3 const &p, Vector3 const &n,
+    Vertex(Vector3 const &p, Vector3 const &n,
                ColorRGBA const &c = ColorRGBA(1, 1, 1, 1))
         : position(p), normal(n), color(c), has_precomputed_normal(true),
-          normal_normalization_factor(0), quadric(DMat4::zero())
+          normal_normalization_factor(0)
     {
-    }
-
-    /**
-     * Get the number of edges incident on the vertex. Equivalent to degree().
-     *
-     * @see degree();
-     */
-    int numEdges() const
-    {
-        return (int)edges.size();
     }
 
     /**
      * Get the degree of the vertex, i.e. number of edges incident on it.
-     * Equivalent to numEdges().
+     * Equivalent to edges.size()().
      *
-     * @see numEdges();
+     * @see edges.size()();
      */
     int degree() const
     {
         return (int)edges.size();
     }
 
-    /** Get the number of faces incident on the vertex. */
-    int numFaces() const
+    /** Get the edge from this vertex to another, if it exists, else return
+     * null. */
+    Edge const *getEdgeTo(Vertex const *v) const
     {
-        return (int)faces.size();
+        return const_cast<Vertex *>(this)->getEdgeTo(v);
     }
 
     /** Get the edge from this vertex to another, if it exists, else return
      * null. */
-    Edge const *getEdgeTo(MeshVertex const *v) const
-    {
-        return const_cast<MeshVertex *>(this)->getEdgeTo(v);
-    }
-
-    /** Get the edge from this vertex to another, if it exists, else return
-     * null. */
-    Edge *getEdgeTo(MeshVertex const *v);
+    Edge *getEdgeTo(Vertex const *v);
 
     /** Check if the vertex is adjacent to a given edge. */
-    bool hasEdgeTo(MeshVertex const *v) const
+    bool hasEdgeTo(Vertex const *v) const
     {
         return getEdgeTo(v) != NULL;
     }
@@ -111,7 +79,7 @@ public:
     /** Check if the edge is adjacent to a given face. */
     bool hasIncidentEdge(Edge const *edge) const
     {
-        for (EdgeConstIterator ei = edgesBegin(); ei != edgesEnd(); ++ei)
+        for (auto ei = edges.begin(); ei != edges.end(); ++ei)
             if (*ei == edge)
                 return true;
 
@@ -121,59 +89,11 @@ public:
     /** Check if the edge is adjacent to a given face. */
     bool hasIncidentFace(Face const *face) const
     {
-        for (FaceConstIterator fi = facesBegin(); fi != facesEnd(); ++fi)
+        for (auto fi = faces.begin(); fi != faces.end(); ++fi)
             if (*fi == face)
                 return true;
 
         return false;
-    }
-
-    /** Get an iterator pointing to the first edge. */
-    EdgeConstIterator edgesBegin() const
-    {
-        return edges.begin();
-    }
-
-    /** Get an iterator pointing to the first edge. */
-    EdgeIterator edgesBegin()
-    {
-        return edges.begin();
-    }
-
-    /** Get an iterator pointing to the position beyond the last edge. */
-    EdgeConstIterator edgesEnd() const
-    {
-        return edges.end();
-    }
-
-    /** Get an iterator pointing to the position beyond the last edge. */
-    EdgeIterator edgesEnd()
-    {
-        return edges.end();
-    }
-
-    /** Get an iterator pointing to the first face. */
-    FaceConstIterator facesBegin() const
-    {
-        return faces.begin();
-    }
-
-    /** Get an iterator pointing to the first face. */
-    FaceIterator facesBegin()
-    {
-        return faces.begin();
-    }
-
-    /** Get an iterator pointing to the position beyond the last face. */
-    FaceConstIterator facesEnd() const
-    {
-        return faces.end();
-    }
-
-    /** Get an iterator pointing to the position beyond the last face. */
-    FaceIterator facesEnd()
-    {
-        return faces.end();
     }
 
     /** Check if the vertex lies on a mesh boundary. */
@@ -228,21 +148,6 @@ public:
         color = color_;
     }
 
-    /** Get the quadric error matrix for this vertex. */
-    DMat4 const &getQuadric() const
-    {
-        return quadric;
-    }
-
-    /** Manually set the quadric error matrix for this vertex. */
-    void setQuadric(DMat4 const &q)
-    {
-        quadric = q;
-    }
-
-    /** Recompute the quadric error matrix for this vertex. */
-    void updateQuadric();
-
 private:
     friend class Mesh;
 
@@ -253,7 +158,7 @@ private:
     }
 
     /** Remove a reference to an edge incident at this vertex. */
-    EdgeIterator removeEdge(EdgeIterator loc)
+    std::list<Edge*>::iterator removeEdge(std::list<Edge*>::iterator loc)
     {
         return edges.erase(loc);
     }
@@ -261,7 +166,7 @@ private:
     /** Remove a reference to an edge incident at this vertex. */
     void removeEdge(Edge *edge)
     {
-        for (EdgeIterator ei = edgesBegin(); ei != edgesEnd();) {
+        for (auto ei = edges.begin(); ei != edges.end();) {
             if (*ei == edge)
                 ei = edges.erase(ei);
             else
@@ -272,7 +177,7 @@ private:
     /** Replace all references to an edge with references to another edge. */
     void replaceEdge(Edge *old_edge, Edge *new_edge)
     {
-        for (EdgeIterator ei = edgesBegin(); ei != edgesEnd(); ++ei)
+        for (auto ei = edges.begin(); ei != edges.end(); ++ei)
             if (*ei == old_edge)
                 *ei = new_edge;
     }
@@ -286,7 +191,7 @@ private:
     /** Replace all references to a face with references to another face. */
     void replaceFace(Face *old_face, Face *new_face)
     {
-        for (FaceIterator fi = facesBegin(); fi != facesEnd(); ++fi)
+        for (auto fi = faces.begin(); fi != faces.end(); ++fi)
             if (*fi == old_face)
                 *fi = new_face;
     }
@@ -328,14 +233,11 @@ private:
     Vector3 position;
     Vector3 normal;
     ColorRGBA color;
-    EdgeList edges;
-    FaceList faces;
+    std::list<Edge*> edges;
+    std::list<Face*> faces;
     bool has_precomputed_normal;
     float normal_normalization_factor;
 
-    // Quadric error-specific
-    DMat4 quadric;
-
-}; // class MeshVertex
+}; // class Vertex
 
 #endif

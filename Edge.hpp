@@ -1,30 +1,21 @@
-#ifndef __A2_MeshEdge_hpp__
-#define __A2_MeshEdge_hpp__
+#ifndef __A2_Edge_hpp__
+#define __A2_Edge_hpp__
 
 #include "Common.hpp"
 #include <list>
 
 // Forward declarations
-class MeshVertex;
-class MeshFace;
+class Vertex;
+class Face;
 
 /** Edge of a mesh. */
-class MeshEdge
+class Edge
 {
-public:
-    typedef MeshVertex Vertex; ///< Vertex of the mesh.
-    typedef MeshFace Face;     ///< Face of the mesh.
-
-private:
-    typedef std::list<Face *> FaceList;
 
 public:
-    typedef typename FaceList::iterator FaceIterator; ///< Iterator over faces.
-    typedef typename FaceList::const_iterator
-        FaceConstIterator; ///< Const iterator over faces.
 
     /** Construct from two endpoints. */
-    MeshEdge(Vertex *v0 = NULL, Vertex *v1 = NULL) : quadric_collapse_error(-1)
+    Edge(Vertex *v0 = NULL, Vertex *v1 = NULL)
     {
         endpoints[0] = v0;
         endpoints[1] = v1;
@@ -34,7 +25,7 @@ public:
      * i = 1 the second. */
     Vertex const *getEndpoint(int i) const
     {
-        debugAssertM(i == 0 || i == 1, "MeshEdge: Invalid endpoint index");
+        debugAssertM(i == 0 || i == 1, "Edge: Invalid endpoint index");
         return endpoints[i];
     }
 
@@ -42,7 +33,7 @@ public:
      * i = 1 the second. */
     Vertex *getEndpoint(int i)
     {
-        debugAssertM(i == 0 || i == 1, "MeshEdge: Invalid endpoint index");
+        debugAssertM(i == 0 || i == 1, "Edge: Invalid endpoint index");
         return endpoints[i];
     }
 
@@ -54,7 +45,7 @@ public:
     Vertex const *getOtherEndpoint(Vertex const *endpoint) const
     {
         debugAssertM(hasEndpoint(endpoint),
-                     "MeshEdge: Vertex is not an endpoint of the edge");
+                     "Edge: Vertex is not an endpoint of the edge");
         return endpoints[0] == endpoint ? endpoints[1] : endpoints[0];
     }
 
@@ -66,7 +57,7 @@ public:
     Vertex *getOtherEndpoint(Vertex const *endpoint)
     {
         debugAssertM(hasEndpoint(endpoint),
-                     "MeshEdge: Vertex is not an endpoint of the edge");
+                     "Edge: Vertex is not an endpoint of the edge");
         return endpoints[0] == endpoint ? endpoints[1] : endpoints[0];
     }
 
@@ -87,7 +78,7 @@ public:
     /** Check if the edge is adjacent to a given face. */
     bool hasIncidentFace(Face const *face) const
     {
-        for (FaceConstIterator fi = facesBegin(); fi != facesEnd(); ++fi)
+        for (auto fi = faces.begin(); fi != faces.end(); ++fi)
             if (*fi == face)
                 return true;
 
@@ -95,7 +86,7 @@ public:
     }
 
     /** Check if two edges share the same endpoints. */
-    bool isCoincidentTo(MeshEdge const &other) const
+    bool isCoincidentTo(Edge const &other) const
     {
         return (endpoints[0] == other.endpoints[0]
                 && endpoints[1] == other.endpoints[1])
@@ -104,7 +95,7 @@ public:
     }
 
     /** Check if this edge shares an endpoint with another. */
-    bool isConnectedTo(MeshEdge const &other) const
+    bool isConnectedTo(Edge const &other) const
     {
         return (endpoints[0] == other.endpoints[0]
                 || endpoints[1] == other.endpoints[1]
@@ -120,9 +111,9 @@ public:
      * counter-clockwise winding order when viewed from the outside. On error,
      * returns null.
      */
-    MeshEdge const *nextAroundEndpoint(int i) const
+    Edge const *nextAroundEndpoint(int i) const
     {
-        return const_cast<MeshEdge *>(this)->nextAroundEndpoint(i);
+        return const_cast<Edge *>(this)->nextAroundEndpoint(i);
     }
 
     /**
@@ -133,7 +124,7 @@ public:
      * counter-clockwise winding order when viewed from the outside. On error,
      * returns null.
      */
-    MeshEdge *nextAroundEndpoint(int i);
+    Edge *nextAroundEndpoint(int i);
 
     /**
      * Get the next edge when stepping counter-clockwise (when viewed from the
@@ -143,9 +134,9 @@ public:
      * counter-clockwise winding order when viewed from the outside. On error,
      * returns null.
      */
-    MeshEdge const *nextAroundEndpoint(Vertex const *endpoint) const
+    Edge const *nextAroundEndpoint(Vertex const *endpoint) const
     {
-        return const_cast<MeshEdge *>(this)->nextAroundEndpoint(endpoint);
+        return const_cast<Edge *>(this)->nextAroundEndpoint(endpoint);
     }
 
     /**
@@ -156,69 +147,19 @@ public:
      * counter-clockwise winding order when viewed from the outside. On error,
      * returns null.
      */
-    MeshEdge *nextAroundEndpoint(Vertex const *endpoint)
+    Edge *nextAroundEndpoint(Vertex const *endpoint)
     {
         debugAssertM(hasEndpoint(endpoint),
-                     "MeshEdge: Vertex is not an endpoint of the edge");
+                     "Edge: Vertex is not an endpoint of the edge");
         return nextAroundEndpoint(getEndpointIndex(endpoint));
-    }
-
-    /** Get the number of faces incident on the edge. */
-    long numFaces() const
-    {
-        return (long)faces.size();
-    }
-
-    /** Get an iterator pointing to the first face. */
-    FaceConstIterator facesBegin() const
-    {
-        return faces.begin();
-    }
-
-    /** Get an iterator pointing to the first face. */
-    FaceIterator facesBegin()
-    {
-        return faces.begin();
-    }
-
-    /** Get an iterator pointing to the position beyond the last face. */
-    FaceConstIterator facesEnd() const
-    {
-        return faces.end();
-    }
-
-    /** Get an iterator pointing to the position beyond the last face. */
-    FaceIterator facesEnd()
-    {
-        return faces.end();
     }
 
     /** Check if this is a boundary edge, i.e. if it is adjacent to at most one
      * face. */
     bool isBoundary() const
     {
-        return numFaces() <= 1;
+        return faces.size() <= 1;
     }
-
-    /** Get the quadric error of collapsing this edge. */
-    double getQuadricCollapseError() const
-    {
-        return quadric_collapse_error;
-    }
-
-    /** Get the optimal position to which to collapse this edge, according to a
-     * quadric error metric. */
-    Vector3 const &getQuadricCollapsePosition() const
-    {
-        return quadric_collapse_position;
-    }
-
-    /**
-     * Recompute the quadric error and optimal collapse position for this
-     * vertex. If these cannot be successfully calculated,
-     * the error will be set to a negative value.
-     */
-    void updateQuadricCollapseError();
 
 private:
     friend class Mesh;
@@ -226,7 +167,7 @@ private:
     /** Set an endpoint of the edge. */
     void setEndpoint(int i, Vertex *vertex)
     {
-        debugAssertM(i == 0 || i == 1, "MeshEdge: Invalid endpoint index");
+        debugAssertM(i == 0 || i == 1, "Edge: Invalid endpoint index");
         endpoints[i] = vertex;
     }
 
@@ -248,7 +189,7 @@ private:
     /** Remove all references to a face incident on this edge. */
     void removeFace(Face *face)
     {
-        for (FaceIterator fi = facesBegin(); fi != facesEnd();) {
+        for (auto fi = faces.begin(); fi != faces.end();) {
             if (*fi == face)
                 fi = faces.erase(fi);
             else
@@ -257,7 +198,7 @@ private:
     }
 
     /** Remove a face incident on this edge. */
-    FaceIterator removeFace(FaceIterator loc)
+    std::list<Face*>::iterator removeFace(std::list<Face*>::iterator loc)
     {
         return faces.erase(loc);
     }
@@ -265,7 +206,7 @@ private:
     /** Replace all references to a face with references to another face. */
     void replaceFace(Face *old_face, Face *new_face)
     {
-        for (FaceIterator fi = facesBegin(); fi != facesEnd(); ++fi)
+        for (auto fi = faces.begin(); fi != faces.end(); ++fi)
             if (*fi == old_face)
                 *fi = new_face;
     }
@@ -277,12 +218,8 @@ private:
     }
 
     Vertex *endpoints[2];
-    FaceList faces;
+    std::list<Face*> faces;
 
-    // Quadric error-specific
-    double quadric_collapse_error;
-    Vector3 quadric_collapse_position;
-
-}; // class MeshEdge
+}; // class Edge
 
 #endif

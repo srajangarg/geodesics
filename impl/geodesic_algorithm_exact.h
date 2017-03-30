@@ -62,9 +62,9 @@ private:
         double pseudo_x, double pseudo_y,
         double d, // parameters of the interval
         double start,
-        double end, // start/end of the interval
-        double alpha, // corner angle
-        double L, // length of the new edge
+        double end,          // start/end of the interval
+        double alpha,        // corner angle
+        double L,            // length of the new edge
         bool first_interval, // if it is the first interval on the edge
         bool last_interval, bool turn_left, bool turn_right,
         IntervalWithStop *candidates); // if it is the last interval on the edge
@@ -144,7 +144,7 @@ private:
     interval_pointer i_new[5];
 
     long unsigned m_queue_max_size; // used for statistics
-    unsigned m_iterations; // used for statistics
+    unsigned m_iterations;          // used for statistics
 
     SortedSources m_sources;
 };
@@ -395,7 +395,7 @@ inline unsigned GeodesicAlgorithmExact::intersect_intervals(
         }
     }
     //---------------------------find possible
-    //intervals---------------------------------------
+    // intervals---------------------------------------
     double left = std::max(zero->start(), one->start()); // define left and
                                                          // right boundaries of
                                                          // the intersection of
@@ -555,9 +555,9 @@ inline void GeodesicAlgorithmExact::propagate(
                 min_interval->pseudo_x(), min_interval->pseudo_y(),
                 min_interval->d(), // parameters of the interval
                 min_interval->start(),
-                min_interval->stop(), // start/end of the interval
+                min_interval->stop(),           // start/end of the interval
                 face->vertex_angle(edge->v0()), // corner angle
-                next_edge->length(), // length of the new edge
+                next_edge->length(),            // length of the new edge
                 first_interval, // if it is the first interval on the edge
                 last_interval, turn_left, turn_right,
                 candidates); // if it is the last interval on the edge
@@ -593,7 +593,7 @@ inline void GeodesicAlgorithmExact::propagate(
                     length - min_interval->stop(),
                     length - min_interval->start(), // start/end of the interval
                     face->vertex_angle(edge->v1()), // corner angle
-                    next_edge->length(), // length of the new edge
+                    next_edge->length(),            // length of the new edge
                     last_interval, // if it is the first interval on the edge
                     first_interval, turn_right, turn_left,
                     candidates); // if it is the last interval on the edge
@@ -875,9 +875,9 @@ inline unsigned GeodesicAlgorithmExact::compute_propagated_parameters(
     double pseudo_x, double pseudo_y,
     double d, // parameters of the interval
     double begin,
-    double end, // start/end of the interval
-    double alpha, // corner angle
-    double L, // length of the new edge
+    double end,          // start/end of the interval
+    double alpha,        // corner angle
+    double L,            // length of the new edge
     bool first_interval, // if it is the first interval on the edge
     bool last_interval, bool turn_left, bool turn_right,
     IntervalWithStop *candidates) // if it is the last interval on the edge

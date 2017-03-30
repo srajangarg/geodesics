@@ -50,7 +50,7 @@ public:
     };
 
 private:
-    double m_distance; // distance to the closest source
+    double m_distance;       // distance to the closest source
     unsigned m_source_index; // closest source index
     node_pointer m_previous; // previous node in the geodesic path
     vertex_pointer m_vertex; // correspoding vertex

@@ -1,12 +1,12 @@
-#include "MeshFace.hpp"
-#include "MeshVertex.hpp"
+#include "Face.hpp"
+#include "Vertex.hpp"
 
-void MeshFace::updateNormal()
+void Face::updateNormal()
 {
     // Assume the face is planar.
-    VertexConstIterator vi2 = vertices.begin();
-    VertexConstIterator vi0 = vi2++;
-    VertexConstIterator vi1 = vi2++;
+    auto vi2 = vertices.begin();
+    auto vi0 = vi2++;
+    auto vi1 = vi2++;
 
     if (vertices.size() > 3) {
         // vi1 might be a concave corner -- we need to add up the cross products
@@ -31,7 +31,7 @@ void MeshFace::updateNormal()
     }
 }
 
-bool MeshFace::contains(Vector3 const &p) const
+bool Face::contains(Vector3 const &p) const
 {
     if (vertices.empty())
         return false;
@@ -39,15 +39,15 @@ bool MeshFace::contains(Vector3 const &p) const
     // Generate a ray for the even-odd test, from p to the midpoint of the first
     // halfedge. Ignore degenerate situations for
     // now.
-    VertexConstIterator vi = verticesBegin();
-    VertexConstIterator last = vi++;
+    auto vi = vertices.begin();
+    auto last = vi++;
     Vector3 u = 0.5 * ((*last)->getPosition() + (*vi)->getPosition()) - p;
 
     long count = 1; // first halfedge is obviously intersected, since we
                     // generated the ray through its midpoint
-    for (; last != verticesEnd(); ++vi) {
-        if (vi == verticesEnd())
-            vi = verticesBegin();
+    for (; last != vertices.end(); ++vi) {
+        if (vi == vertices.end())
+            vi = vertices.begin();
 
         Vector3 v0 = (*last)->getPosition() - p;
         Vector3 v1 = (*vi)->getPosition() - p;

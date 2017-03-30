@@ -147,16 +147,16 @@ public:
                     unsigned source_index = 0);
 
 protected:
-    double m_start; // initial point of the interval on the edge
-    double m_d; // distance from the source to the pseudo-source
+    double m_start;    // initial point of the interval on the edge
+    double m_d;        // distance from the source to the pseudo-source
     double m_pseudo_x; // coordinates of the pseudo-source in the local
                        // coordinate system
     double m_pseudo_y; // y-coordinate should be always negative
-    double m_min; // minimum distance on the interval
+    double m_min;      // minimum distance on the interval
 
-    interval_pointer m_next; // pointer to the next interval in the list
-    edge_pointer m_edge; // edge that the interval belongs to
-    unsigned m_source_index; // the source it belongs to
+    interval_pointer m_next;   // pointer to the next interval in the list
+    edge_pointer m_edge;       // edge that the interval belongs to
+    unsigned m_source_index;   // the source it belongs to
     DirectionType m_direction; // where the interval is coming from
 };
 
@@ -268,7 +268,7 @@ public:
 
 private:
     interval_pointer m_first; // pointer to the first member of the list
-    edge_pointer m_edge; // edge that owns this list
+    edge_pointer m_edge;      // edge that owns this list
 };
 
 class SurfacePointWithIndex : public SurfacePoint

@@ -13,8 +13,8 @@ namespace geodesic
 {
 
 template <class T> // quickly allocates multiple elements of a given type; no
-                   // deallocation
-                   class SimlpeMemoryAllocator
+// deallocation
+class SimlpeMemoryAllocator
 {
 public:
     typedef T *pointer;
@@ -56,15 +56,15 @@ public:
 
 private:
     std::vector<std::vector<T>> m_storage;
-    unsigned m_block_size; // size of a single block
+    unsigned m_block_size;           // size of a single block
     unsigned m_max_number_of_blocks; // maximum allowed number of blocks
-    unsigned m_current_position; // first unused element inside the current
-                                 // block
+    unsigned m_current_position;     // first unused element inside the current
+                                     // block
 };
 
 template <class T> // quickly allocates and deallocates single elements of a
-                   // given type
-                   class MemoryAllocator
+// given type
+class MemoryAllocator
 {
 public:
     typedef T *pointer;
@@ -128,10 +128,10 @@ public:
 
 private:
     std::vector<std::vector<T>> m_storage;
-    unsigned m_block_size; // size of a single block
+    unsigned m_block_size;           // size of a single block
     unsigned m_max_number_of_blocks; // maximum allowed number of blocks
-    unsigned m_current_position; // first unused element inside the current
-                                 // block
+    unsigned m_current_position;     // first unused element inside the current
+                                     // block
 
     std::vector<pointer> m_deleted; // pointers to deleted elemets
 };

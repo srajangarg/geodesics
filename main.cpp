@@ -33,12 +33,11 @@ int main(int argc, char *argv[])
         return -1;
 
     DGP_CONSOLE << "Read mesh '" << mesh.getName() << "' with "
-                << mesh.numVertices() << " vertices, " << mesh.numEdges()
-                << " edges and " << mesh.numFaces() << " faces from "
+                << mesh.vertices.size() << " vertices, " << mesh.edges.size()
+                << " edges and " << mesh.faces.size() << " faces from "
                 << in_path;
 
-    if (target_num_faces >= 0 && mesh.numFaces() > target_num_faces) {
-        mesh.decimateQuadricEdgeCollapse(target_num_faces);
+    if (target_num_faces >= 0 && mesh.faces.size() > target_num_faces) {
         mesh.updateBounds();
     }
 

@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         }
 
         //------------------second task: for each source, find the furthest
-        //vertex that it covers ----
+        // vertex that it covers ----
         std::vector<double> max_distance(sources.size(), 0.0); // distance to
                                                                // the furthest
                                                                // vertex that is

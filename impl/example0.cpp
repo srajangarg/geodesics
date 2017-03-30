@@ -65,8 +65,8 @@ int main(int argc, char **argv)
                 1, target); // stop propagation when the target is covered
             algorithm.propagate(all_sources, distance_limit,
                                 &stop_points); //"propagate(all_sources)" is
-                                               //also fine, but take more time
-                                               //because covers the whole mesh
+            // also fine, but take more time
+            // because covers the whole mesh
 
             algorithm.trace_back(target, path); // trace back a single path
         }

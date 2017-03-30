@@ -10,7 +10,9 @@ basic
 		a map from edges to the existing windows it has on it
 		a heap for inserting/removing the edges (std::set)
 
-		a back tracing struct/class
+	functions required :
+
+		back tracing function which gives path
 
 - visualization of shortest path
 - geodseci contour visualiztion

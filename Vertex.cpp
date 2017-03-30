@@ -1,31 +1,13 @@
-#include "MeshVertex.hpp"
-#include "MeshEdge.hpp"
-#include "MeshFace.hpp"
+#include "Vertex.hpp"
+#include "Edge.hpp"
+#include "Face.hpp"
 
-void MeshVertex::updateQuadric()
-{
-    quadric = DMat4::zero();
-    for (FaceConstIterator fi = facesBegin(); fi != facesEnd(); ++fi) {
-        Face const *face = *fi;
-        if (face->numVertices() <= 0)
-            continue;
-
-        Vector3 abc = face->getNormal().unit();
-        Real a = abc[0], b = abc[1], c = abc[2];
-        Real d = -abc.dot((*face->verticesBegin())->getPosition());
-
-        quadric
-            += DMat4(a * a, a * b, a * c, a * d, b * a, b * b, b * c, b * d,
-                     c * a, c * b, c * c, c * d, d * a, d * b, d * c, d * d);
-    }
-}
-
-MeshEdge *MeshVertex::getEdgeTo(MeshVertex const *v)
+Edge *Vertex::getEdgeTo(Vertex const *v)
 {
     if (v == this)
         return NULL;
 
-    for (EdgeConstIterator ei = edgesBegin(); ei != edgesEnd(); ++ei) {
+    for (auto ei = edges.begin(); ei != edges.end(); ++ei) {
         Edge *e = *ei;
         if (e->hasEndpoint(v))
             return e;
@@ -34,28 +16,28 @@ MeshEdge *MeshVertex::getEdgeTo(MeshVertex const *v)
     return NULL;
 }
 
-bool MeshVertex::isBoundary() const
+bool Vertex::isBoundary() const
 {
     if (edges.empty())
         return true;
 
-    for (EdgeConstIterator ei = edgesBegin(); ei != edgesEnd(); ++ei)
+    for (auto ei = edges.begin(); ei != edges.end(); ++ei)
         if ((*ei)->isBoundary())
             return true;
 
     return false;
 }
 
-void MeshVertex::addFace(Face *face, bool update_normal)
+void Vertex::addFace(Face *face, bool update_normal)
 {
     faces.push_back(face);
     if (update_normal && !has_precomputed_normal)
         addFaceNormal(face->getNormal());
 }
 
-void MeshVertex::removeFace(Face *face)
+void Vertex::removeFace(Face *face)
 {
-    for (FaceIterator fi = facesBegin(); fi != facesEnd();) {
+    for (auto fi = faces.begin(); fi != faces.end();) {
         if (*fi == face) {
             fi = faces.erase(fi);
             if (!has_precomputed_normal)
@@ -67,11 +49,11 @@ void MeshVertex::removeFace(Face *face)
     }
 }
 
-void MeshVertex::updateNormal()
+void Vertex::updateNormal()
 {
     if (!faces.empty()) {
         Vector3 sum_normals = Vector3::zero();
-        for (FaceConstIterator fi = faces.begin(); fi != faces.end(); ++fi)
+        for (auto fi = faces.begin(); fi != faces.end(); ++fi)
             sum_normals += (*fi)->getNormal(); // weight by face area?
 
         normal_normalization_factor = sum_normals.length();

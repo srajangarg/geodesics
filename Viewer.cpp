@@ -23,7 +23,7 @@ int Viewer::drag_start_x = -1;
 int Viewer::drag_start_y = -1;
 bool Viewer::show_bbox = false;
 bool Viewer::show_edges = false;
-MeshVertex const *Viewer::highlighted_vertex = NULL;
+Vertex const *Viewer::highlighted_vertex = NULL;
 
 void Viewer::setObject(Mesh *o)
 {
@@ -282,9 +282,6 @@ void Viewer::keyPress(unsigned char key, int x, int y)
         glutPostRedisplay();
     } else if (key == 'f' || key == 'F') {
         fitCameraToObject();
-        glutPostRedisplay();
-    } else if (key == 'd' || key == 'd') {
-        highlighted_vertex = mesh->decimateQuadricEdgeCollapse();
         glutPostRedisplay();
     }
 }
