@@ -1,0 +1,17 @@
+basic
+
+- base code for input and storage
+- algorithm for djikstras/ subdivision
+- mmp algorithm
+
+	- make `Window` class
+	...
+
+- visualization of shortest path
+- geodseci contour visualiztion
+- interactive point selection
+
+extra
+
+- handle non-triangle face meshes (essentially triangulation)
+- make a comparision suite, shwo extreme cases, speedups etc.
