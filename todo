@@ -3,9 +3,14 @@ basic
 - base code for input and storage
 - algorithm for djikstras/ subdivision
 - mmp algorithm
+	
+	data structs required :
 
-	- make `Window` class
-	...
+		window class
+		a map from edges to the existing windows it has on it
+		a heap for inserting/removing the edges (std::set)
+
+		a back tracing struct/class
 
 - visualization of shortest path
 - geodseci contour visualiztion
