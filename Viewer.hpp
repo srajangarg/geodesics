@@ -14,9 +14,9 @@ class MeshVertex;
 /* Displays an object using OpenGL and GLUT. */
 class Viewer
 {
-  private:
-    static Graphics::RenderSystem * render_system;
-    static Mesh * mesh;
+private:
+    static Graphics::RenderSystem *render_system;
+    static Mesh *mesh;
 
     static int width;
     static int height;
@@ -28,19 +28,21 @@ class Viewer
     static int drag_start_x, drag_start_y;
     static bool show_bbox;
     static bool show_edges;
-    static MeshVertex const * highlighted_vertex;
+    static MeshVertex const *highlighted_vertex;
 
-  public:
-    /** Set the object to be displayed. The object must persist as long as the viewer does. */
-    static void setObject(Mesh * o);
+public:
+    /** Set the object to be displayed. The object must persist as long as the
+     * viewer does. */
+    static void setObject(Mesh *o);
 
     /**
-     * Call this function to launch the viewer. It will not return under normal circumstances, so make sure stuff is set up
+     * Call this function to launch the viewer. It will not return under normal
+     * circumstances, so make sure stuff is set up
      * before you call it!
      */
-    static void launch(int argc, char * argv[]);
+    static void launch(int argc, char *argv[]);
 
-  private:
+private:
     /** Callback for drawing the object. */
     static void draw();
 
@@ -57,13 +59,14 @@ class Viewer
     static void mouseMotion(int x, int y);
 
     /** Draw a bounding box as an outline. */
-    static void drawOutlineBox(AxisAlignedBox3 const & bbox);
+    static void drawOutlineBox(AxisAlignedBox3 const &bbox);
 
-    /** Position the camera to center the object and fit it in the frame, without changing orientation. */
+    /** Position the camera to center the object and fit it in the frame,
+     * without changing orientation. */
     static void fitCameraToObject();
 
     /** Update the camera view by adding an additional transform. */
-    static void incrementViewTransform(AffineTransform3 const & tr);
+    static void incrementViewTransform(AffineTransform3 const &tr);
 
 }; // class Viewer
 

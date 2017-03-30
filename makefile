@@ -11,9 +11,9 @@ ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 INCLUDES :=
 LFLAGS :=
 LIBS := -lX11 -lXi -lXmu -lglut -lGLU -lGL -lm
-SRCS := $(shell ls -1 $(ROOT_DIR)/src/DGP/*.cpp | sed 's/ /\\ /g') \
-        $(shell ls -1 $(ROOT_DIR)/src/DGP/Graphics/*.cpp | sed 's/ /\\ /g') \
-        $(shell ls -1 $(ROOT_DIR)/src/*.cpp | sed 's/ /\\ /g')
+SRCS := $(shell ls -1 $(ROOT_DIR)/DGP/*.cpp | sed 's/ /\\ /g') \
+        $(shell ls -1 $(ROOT_DIR)/DGP/Graphics/*.cpp | sed 's/ /\\ /g') \
+        $(shell ls -1 $(ROOT_DIR)/*.cpp | sed 's/ /\\ /g')
 OBJS := $(SRCS:.cpp=.o)
 MAIN := simplify
 
@@ -41,5 +41,6 @@ depend: $(SRCS)
 	makedepend $(INCLUDES) $^
 
 format:
-	
+	$(shell for FILE in `git ls-files | grep -E "\.(cpp|h|hpp|c)$$" | grep -Ev "DGP"`; do clang-format-3.7 -i $$FILE; done)
+
 # DO NOT DELETE THIS LINE -- make depend needs it
