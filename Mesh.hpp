@@ -84,8 +84,7 @@ public:
         Vector3 v[3];
         for (VertexIterator vi = vbegin; vi != vend; ++vi, ++num_verts) {
             debugAssertM(*vi,
-                         getNameStr()
-                             + ": Null vertex pointer specified for new face");
+                         getNameStr() + ": Null vertex pointer specified for new face");
             if (num_verts < 3)
                 v[num_verts] = (*vi)->getPosition();
         }
@@ -124,8 +123,7 @@ public:
 
         // Update the face and vertex normals;
         face->updateNormal();
-        for (auto fvi = face->vertices.begin(); fvi != face->vertices.end();
-             ++fvi)
+        for (auto fvi = face->vertices.begin(); fvi != face->vertices.end(); ++fvi)
             (*fvi)->addFaceNormal(face->getNormal()); // weight by face area?
 
         return face;
@@ -165,8 +163,7 @@ public:
     {
         Face *fp = &(*face);
 
-        for (auto fvi = face->vertices.begin(); fvi != face->vertices.end();
-             ++fvi)
+        for (auto fvi = face->vertices.begin(); fvi != face->vertices.end(); ++fvi)
             (*fvi)->removeFace(fp);
 
         for (auto fei = face->edges.begin(); fei != face->edges.end(); ++fei)

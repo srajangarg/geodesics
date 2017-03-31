@@ -22,4 +22,3 @@ Edge *Edge::nextAroundEndpoint(int i)
 
     return NULL;
 }
-

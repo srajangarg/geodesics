@@ -66,8 +66,7 @@ private:
     vertex_pointer m_vertex; // correspoding vertex
 };
 
-class GeodesicAlgorithmDijkstra
-    : public GeodesicAlgorithmGraphBase<DijkstraNode>
+class GeodesicAlgorithmDijkstra : public GeodesicAlgorithmGraphBase<DijkstraNode>
 {
 public:
     typedef DijkstraNode Node;
@@ -136,8 +135,7 @@ inline void GeodesicAlgorithmDijkstra::list_nodes_visible_from_node(
         vertex_pointer new_v = e->opposite_vertex(v);
         node_pointer new_node = &m_nodes[node_index(new_v)];
 
-        if (new_node->distance_from_source()
-            > threshold_distance + e->length()) {
+        if (new_node->distance_from_source() > threshold_distance + e->length()) {
             storage.push_back(new_node);
             distances.push_back(e->length());
         }

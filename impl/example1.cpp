@@ -40,8 +40,7 @@ int main(int argc, char **argv)
     sources.push_back(geodesic::SurfacePoint(
         &mesh.vertices()[0])); // one source is located at vertex zero
     sources.push_back(geodesic::SurfacePoint(
-        &mesh.edges()
-             [12])); // second source is located in the middle of edge 12
+        &mesh.edges()[12])); // second source is located in the middle of edge 12
     sources.push_back(geodesic::SurfacePoint(
         &mesh.faces()[20])); // third source is located in the middle of face 20
 
@@ -78,15 +77,13 @@ int main(int argc, char **argv)
             double distance;
             unsigned best_source = algorithm->best_source(p, distance);
 
-            max_distance[best_source]
-                = std::max(max_distance[best_source], distance);
+            max_distance[best_source] = std::max(max_distance[best_source], distance);
         }
 
         std::cout << std::endl;
         for (int i = 0; i < max_distance.size(); ++i) {
-            std::cout
-                << "distance to the furthest vertex that is covered by source "
-                << i << " is " << max_distance[i] << std::endl;
+            std::cout << "distance to the furthest vertex that is covered by source " << i
+                      << " is " << max_distance[i] << std::endl;
         }
     }
     return 0;

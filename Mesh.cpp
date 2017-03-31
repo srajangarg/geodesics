@@ -36,8 +36,7 @@ void Mesh::draw(Graphics::RenderSystem &render_system, bool draw_edges,
     // Finish off with all larger polygons
     for (auto fi = faces.begin(); fi != faces.end(); ++fi)
         if (fi->edges.size() > 4) {
-            render_system.beginPrimitive(
-                Graphics::RenderSystem::Primitive::POLYGON);
+            render_system.beginPrimitive(Graphics::RenderSystem::Primitive::POLYGON);
             drawFace(*fi, render_system, use_vertex_data, send_colors);
             render_system.endPrimitive();
         }
@@ -50,8 +49,7 @@ void Mesh::draw(Graphics::RenderSystem &render_system, bool draw_edges,
         render_system.pushColorFlags();
 
         render_system.setShader(NULL);
-        render_system.setColor(
-            ColorRGBA(0.2, 0.3, 0.7, 1)); // set default edge color
+        render_system.setColor(ColorRGBA(0.2, 0.3, 0.7, 1)); // set default edge color
 
         render_system.beginPrimitive(Graphics::RenderSystem::Primitive::LINES);
         for (auto ei = edges.begin(); ei != edges.end(); ++ei) {
@@ -77,15 +75,13 @@ bool Mesh::loadOFF(std::string const &path)
 
     std::string magic;
     if (!(in >> magic) || magic != "OFF") {
-        DGP_ERROR << "Header string OFF not found at beginning of file '"
-                  << path << '\'';
+        DGP_ERROR << "Header string OFF not found at beginning of file '" << path << '\'';
         return false;
     }
 
     long nv, nf, ne;
     if (!(in >> nv >> nf >> ne)) {
-        DGP_ERROR << "Could not read element counts from OFF file '" << path
-                  << '\'';
+        DGP_ERROR << "Could not read element counts from OFF file '" << path << '\'';
         return false;
     }
 
@@ -98,8 +94,8 @@ bool Mesh::loadOFF(std::string const &path)
     Vector3 p;
     for (long i = 0; i < nv; ++i) {
         if (!(in >> p[0] >> p[1] >> p[2])) {
-            DGP_ERROR << "Could not read vertex " << indexed_vertices.size()
-                      << " from '" << path << '\'';
+            DGP_ERROR << "Could not read vertex " << indexed_vertices.size() << " from '"
+                      << path << '\'';
             return false;
         }
 
@@ -114,23 +110,22 @@ bool Mesh::loadOFF(std::string const &path)
     long num_face_vertices, vertex_index;
     for (long i = 0; i < nf; ++i) {
         if (!(in >> num_face_vertices) || num_face_vertices < 0) {
-            DGP_ERROR << "Could not read valid vertex count of face "
-                      << faces.size() << " from '" << path << '\'';
+            DGP_ERROR << "Could not read valid vertex count of face " << faces.size()
+                      << " from '" << path << '\'';
             return false;
         }
 
         face_vertices.resize(num_face_vertices);
         for (size_t j = 0; j < face_vertices.size(); ++j) {
             if (!(in >> vertex_index)) {
-                DGP_ERROR << "Could not read vertex " << j << " of face "
-                          << faces.size() << " from '" << path << '\'';
+                DGP_ERROR << "Could not read vertex " << j << " of face " << faces.size()
+                          << " from '" << path << '\'';
                 return false;
             }
 
             if (vertex_index < 0 || vertex_index >= (long)vertices.size()) {
-                DGP_ERROR << "Out-of-bounds index " << vertex_index
-                          << " of vertex " << j << " of face " << faces.size()
-                          << " from '" << path << '\'';
+                DGP_ERROR << "Out-of-bounds index " << vertex_index << " of vertex " << j
+                          << " of face " << faces.size() << " from '" << path << '\'';
                 return false;
             }
 
@@ -139,8 +134,7 @@ bool Mesh::loadOFF(std::string const &path)
 
         addFace(
             face_vertices.begin(),
-            face_vertices
-                .end()); // ok if this fails, just skip the face with a warning
+            face_vertices.end()); // ok if this fails, just skip the face with a warning
     }
 
     setName(FilePath::objectName(path));
@@ -175,8 +169,7 @@ bool Mesh::saveOFF(std::string const &path) const
         for (auto vi = fi->vertices.begin(); vi != fi->vertices.end(); ++vi) {
             VertexIndexMap::const_iterator existing = vertex_indices.find(*vi);
             if (existing == vertex_indices.end()) {
-                DGP_ERROR << "Face references vertex absent from mesh '" << path
-                          << '\'';
+                DGP_ERROR << "Face references vertex absent from mesh '" << path << '\'';
                 return false;
             }
 

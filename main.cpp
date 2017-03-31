@@ -5,8 +5,7 @@
 int usage(int argc, char *argv[])
 {
     DGP_CONSOLE << "";
-    DGP_CONSOLE << "Usage: " << argv[0]
-                << " <mesh-in> [<target-num-faces> [<mesh-out>]]";
+    DGP_CONSOLE << "Usage: " << argv[0] << " <mesh-in> [<target-num-faces> [<mesh-out>]]";
     DGP_CONSOLE << "";
 
     return -1;
@@ -32,10 +31,9 @@ int main(int argc, char *argv[])
     if (!mesh.load(in_path))
         return -1;
 
-    DGP_CONSOLE << "Read mesh '" << mesh.getName() << "' with "
-                << mesh.vertices.size() << " vertices, " << mesh.edges.size()
-                << " edges and " << mesh.faces.size() << " faces from "
-                << in_path;
+    DGP_CONSOLE << "Read mesh '" << mesh.getName() << "' with " << mesh.vertices.size()
+                << " vertices, " << mesh.edges.size() << " edges and "
+                << mesh.faces.size() << " faces from " << in_path;
 
     if (target_num_faces >= 0 && mesh.faces.size() > target_num_faces) {
         mesh.updateBounds();

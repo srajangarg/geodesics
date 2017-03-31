@@ -80,13 +80,11 @@ void Viewer::fitCameraToObject()
     Real scale = bbox.getExtent().length();
     Real camera_separation = DIST * scale;
     CoordinateFrame3 cframe = camera.getFrame();
-    cframe.setTranslation(camera_look_at
-                          - camera_separation * camera.getLookDirection());
+    cframe.setTranslation(camera_look_at - camera_separation * camera.getLookDirection());
 
-    camera.set(cframe, Camera::ProjectionType::PERSPECTIVE,
-               (left / DIST) * scale, (right / DIST) * scale,
-               (bottom / DIST) * scale, (top / DIST) * scale, NEAR * scale,
-               camera_separation + 1000 * scale,
+    camera.set(cframe, Camera::ProjectionType::PERSPECTIVE, (left / DIST) * scale,
+               (right / DIST) * scale, (bottom / DIST) * scale, (top / DIST) * scale,
+               NEAR * scale, camera_separation + 1000 * scale,
                Camera::ProjectedYDirection::UP);
 }
 
@@ -135,8 +133,8 @@ bool initMeshShader(Graphics::Shader &shader)
         shader.attachModuleFromString(Graphics::Shader::ModuleType::FRAGMENT,
                                       FRAGMENT_SHADER.c_str());
     }
-    DGP_STANDARD_CATCH_BLOCKS(
-        return false;, ERROR, "%s", "Could not attach mesh shader module")
+    DGP_STANDARD_CATCH_BLOCKS(return false;
+                              , ERROR, "%s", "Could not attach mesh shader module")
 
     shader.setUniform("light_dir", Vector3(-1, -1, -2));
     shader.setUniform("light_color", ColorRGB(1, 1, 1));
@@ -168,11 +166,9 @@ void Viewer::draw()
                 return;
         }
 
-        render_system->setMatrixMode(
-            Graphics::RenderSystem::MatrixMode::MODELVIEW);
+        render_system->setMatrixMode(Graphics::RenderSystem::MatrixMode::MODELVIEW);
         render_system->pushMatrix();
-        render_system->setMatrixMode(
-            Graphics::RenderSystem::MatrixMode::PROJECTION);
+        render_system->setMatrixMode(Graphics::RenderSystem::MatrixMode::PROJECTION);
         render_system->pushMatrix();
 
         render_system->setCamera(camera);
@@ -195,19 +191,16 @@ void Viewer::draw()
             render_system->setColor(ColorRGB(1, 0, 0));
             render_system->setPointSize(10);
 
-            render_system->beginPrimitive(
-                Graphics::RenderSystem::Primitive::POINTS);
+            render_system->beginPrimitive(Graphics::RenderSystem::Primitive::POINTS);
             render_system->sendVertex(highlighted_vertex->getPosition());
             render_system->endPrimitive();
         }
 
         render_system->popShader();
 
-        render_system->setMatrixMode(
-            Graphics::RenderSystem::MatrixMode::PROJECTION);
+        render_system->setMatrixMode(Graphics::RenderSystem::MatrixMode::PROJECTION);
         render_system->popMatrix();
-        render_system->setMatrixMode(
-            Graphics::RenderSystem::MatrixMode::MODELVIEW);
+        render_system->setMatrixMode(Graphics::RenderSystem::MatrixMode::MODELVIEW);
         render_system->popMatrix();
     }
 
@@ -236,8 +229,7 @@ Matrix3 dragToRotation(int x1, int y1, int x2, int y2, int width, int height,
     if (dx == 0 && dy == 0)
         return Matrix3::identity();
 
-    Vector3 axis
-        = dy * camera.getRightDirection() + dx * camera.getUpDirection();
+    Vector3 axis = dy * camera.getRightDirection() + dx * camera.getUpDirection();
 
     int size = (width < height ? width : height);
     Real angle = ROT_SPEED * Vector2(dx, -dy).length() / size;
@@ -261,12 +253,10 @@ Real dragToScale(int x1, int y1, int x2, int y2, int width, int height,
         return std::max(1 - SCALE_DEC_SPEED * dy / (Real)height, MIN_SCALE);
 }
 
-AffineTransform3 zoomTransform(Real zoom, Real camera_separation,
-                               Vector3 const &zoom_dir)
+AffineTransform3 zoomTransform(Real zoom, Real camera_separation, Vector3 const &zoom_dir)
 {
     static Real const MIN_ZOOM = 0.25;
-    Vector3 trn
-        = (1.0f / std::max(zoom, MIN_ZOOM) - 1) * camera_separation * zoom_dir;
+    Vector3 trn = (1.0f / std::max(zoom, MIN_ZOOM) - 1) * camera_separation * zoom_dir;
     return AffineTransform3(Matrix3::identity(), trn);
 }
 
@@ -328,12 +318,10 @@ void Viewer::mouseMotion(int x, int y)
         } else
             dir = camera.getLookDirection();
 
-        Real camera_separation
-            = (camera_look_at - camera.getPosition()).length();
+        Real camera_separation = (camera_look_at - camera.getPosition()).length();
         incrementViewTransform(zoomTransform(zoom, camera_separation, dir));
     } else {
-        Matrix3 rot
-            = dragToRotation(last_x, last_y, x, y, width, height, camera);
+        Matrix3 rot = dragToRotation(last_x, last_y, x, y, width, height, camera);
         Vector3 trn = camera_look_at - rot * camera_look_at;
         incrementViewTransform(AffineTransform3(rot, trn));
     }

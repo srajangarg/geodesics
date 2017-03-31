@@ -37,8 +37,7 @@ int main(int argc, char **argv)
 
     unsigned source_vertex_index = (argc == 2) ? 0 : atol(argv[2]);
 
-    geodesic::SurfacePoint source(
-        &mesh.vertices()[source_vertex_index]); // create source
+    geodesic::SurfacePoint source(&mesh.vertices()[source_vertex_index]); // create source
     std::vector<geodesic::SurfacePoint> all_sources(
         1, source); // in general, there could be multiple sources, but now we
                     // have only one
@@ -52,11 +51,9 @@ int main(int argc, char **argv)
         std::vector<geodesic::SurfacePoint>
             path; // geodesic path is a sequence of SurfacePoints
 
-        bool const lazy_people_flag
-            = false; // there are two ways to do exactly the same
+        bool const lazy_people_flag = false; // there are two ways to do exactly the same
         if (lazy_people_flag) {
-            algorithm.geodesic(source, target,
-                               path); // find a single source-target path
+            algorithm.geodesic(source, target, path); // find a single source-target path
         } else // doing the same thing explicitly for educational reasons
         {
             double const distance_limit
@@ -88,8 +85,7 @@ int main(int argc, char **argv)
                 p, distance); // for a given surface point, find closets source
                               // and distance to this source
 
-            std::cout << distance
-                      << " "; // print geodesic distance for every vertex
+            std::cout << distance << " "; // print geodesic distance for every vertex
         }
         std::cout << std::endl;
     }

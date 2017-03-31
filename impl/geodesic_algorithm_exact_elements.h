@@ -23,12 +23,7 @@ public:
     Interval(){};
     ~Interval(){};
 
-    enum DirectionType {
-        FROM_FACE_0,
-        FROM_FACE_1,
-        FROM_SOURCE,
-        UNDEFINED_DIRECTION
-    };
+    enum DirectionType { FROM_FACE_0, FROM_FACE_1, FROM_SOURCE, UNDEFINED_DIRECTION };
 
     double signal(double x) // geodesic distance function at point x
     {
@@ -59,8 +54,7 @@ public:
         }
     }
 
-    void compute_min_distance(
-        double stop) // compute min, given c,d theta, start, end.
+    void compute_min_distance(double stop) // compute min, given c,d theta, start, end.
     {
         assert(stop > m_start);
 
@@ -191,8 +185,8 @@ public:
         m_first = NULL;
     };
 
-    interval_pointer covering_interval(
-        double offset) // returns the interval that covers the offset
+    interval_pointer
+    covering_interval(double offset) // returns the interval that covers the offset
     {
         assert(offset >= 0.0 && offset <= m_edge->length());
 
@@ -204,8 +198,8 @@ public:
         return p; // && p->start() <= offset ? p : NULL;
     };
 
-    void find_closest_point(SurfacePoint *point, double &offset,
-                            double &distance, interval_pointer &interval)
+    void find_closest_point(SurfacePoint *point, double &offset, double &distance,
+                            interval_pointer &interval)
     {
         interval_pointer p = m_first;
         distance = GEODESIC_INF;
@@ -318,8 +312,8 @@ public:
                            m_compare_less);
     }
 
-    void initialize(std::vector<SurfacePoint>
-                        &sources) // we initialize the sources by copie
+    void
+    initialize(std::vector<SurfacePoint> &sources) // we initialize the sources by copie
     {
         resize(sources.size());
         m_sorted.resize(sources.size());
@@ -345,8 +339,7 @@ private:
     SurfacePointWithIndex m_compare_less; // used as a compare functor
 };
 
-inline void Interval::find_closest_point(double const rs, double const hs,
-                                         double &r,
+inline void Interval::find_closest_point(double const rs, double const hs, double &r,
                                          double &d_out) // find the point on the
                                                         // interval that is
                                                         // closest to the point

@@ -57,8 +57,7 @@ public:
 
 private:
     void build_adjacencies(); // build internal structure of the mesh
-    bool
-    verify(); // verifies connectivity of the mesh and prints some debug info
+    bool verify(); // verifies connectivity of the mesh and prints some debug info
 
     typedef void *void_pointer;
     void_pointer allocate_pointers(unsigned n)
@@ -128,8 +127,8 @@ void Mesh::initialize_mesh_data(
 }
 
 template <class Points, class Faces>
-void Mesh::initialize_mesh_data(unsigned num_vertices, Points &p,
-                                unsigned num_faces, Faces &tri)
+void Mesh::initialize_mesh_data(unsigned num_vertices, Points &p, unsigned num_faces,
+                                Faces &tri)
 {
     unsigned const approximate_number_of_internal_pointers
         = (num_vertices + num_faces) * 4;
@@ -150,13 +149,12 @@ void Mesh::initialize_mesh_data(unsigned num_vertices, Points &p,
     }
 
     m_faces.resize(num_faces);
-    for (unsigned i = 0; i < num_faces;
-         ++i) // copy adjacent vertices to polygons/faces
+    for (unsigned i = 0; i < num_faces; ++i) // copy adjacent vertices to polygons/faces
     {
         Face &f = m_faces[i];
         f.id() = i;
-        f.adjacent_vertices().set_allocation(
-            allocate_pointers(3), 3); // allocate three units of memory
+        f.adjacent_vertices().set_allocation(allocate_pointers(3),
+                                             3); // allocate three units of memory
 
         unsigned shift = 3 * i;
         for (unsigned j = 0; j < 3; ++j) {
@@ -188,8 +186,7 @@ inline void Mesh::build_adjacencies()
         unsigned num_adjacent_faces = count[i];
 
         v.adjacent_faces().set_allocation(
-            allocate_pointers(
-                num_adjacent_faces), // allocate three units of memory
+            allocate_pointers(num_adjacent_faces), // allocate three units of memory
             num_adjacent_faces);
     }
 
@@ -246,11 +243,9 @@ inline void Mesh::build_adjacencies()
         e.adjacent_vertices()[0] = &m_vertices[half_edges[i].vertex_0];
         e.adjacent_vertices()[1] = &m_vertices[half_edges[i].vertex_1];
 
-        e.length()
-            = e.adjacent_vertices()[0]->distance(e.adjacent_vertices()[1]);
-        assert(
-            e.length()
-            > 1e-100); // algorithm works well with non-degenerate meshes only
+        e.length() = e.adjacent_vertices()[0]->distance(e.adjacent_vertices()[1]);
+        assert(e.length()
+               > 1e-100); // algorithm works well with non-degenerate meshes only
 
         if (i != half_edges.size() - 1
             && half_edges[i] == half_edges[i + 1]) // double edge
@@ -277,8 +272,8 @@ inline void Mesh::build_adjacencies()
         count[e.adjacent_vertices()[1]->id()]++;
     }
     for (unsigned i = 0; i < m_vertices.size(); ++i) {
-        m_vertices[i].adjacent_edges().set_allocation(
-            allocate_pointers(count[i]), count[i]);
+        m_vertices[i].adjacent_edges().set_allocation(allocate_pointers(count[i]),
+                                                      count[i]);
     }
     std::fill(count.begin(), count.end(), 0);
     for (unsigned i = 0; i < m_edges.size(); ++i) {
@@ -310,8 +305,7 @@ inline void Mesh::build_adjacencies()
         Face &f = m_faces[i];
         double abc[3];
         double sum = 0;
-        for (unsigned j = 0; j < 3;
-             ++j) // compute angle adjacent to the vertex j
+        for (unsigned j = 0; j < 3; ++j) // compute angle adjacent to the vertex j
         {
             for (unsigned k = 0; k < 3; ++k) {
                 vertex_pointer v = f.adjacent_vertices()[(j + k) % 3];
@@ -319,9 +313,7 @@ inline void Mesh::build_adjacencies()
             }
 
             double angle = angle_from_edges(abc[0], abc[1], abc[2]);
-            assert(
-                angle
-                > 1e-5); // algorithm works well with non-degenerate meshes only
+            assert(angle > 1e-5); // algorithm works well with non-degenerate meshes only
 
             f.corner_angles()[j] = angle;
             sum += angle;
@@ -342,8 +334,7 @@ inline void Mesh::build_adjacencies()
 
     for (unsigned i = 0; i < m_vertices.size(); ++i) {
         Vertex &v = m_vertices[i];
-        v.saddle_or_boundary()
-            = (total_vertex_angle[v.id()] > 2.0 * M_PI - 1e-5);
+        v.saddle_or_boundary() = (total_vertex_angle[v.id()] > 2.0 * M_PI - 1e-5);
     }
 
     for (unsigned i = 0; i < m_edges.size(); ++i) {
@@ -357,8 +348,7 @@ inline void Mesh::build_adjacencies()
     assert(verify());
 }
 
-inline bool
-Mesh::verify() // verifies connectivity of the mesh and prints some debug info
+inline bool Mesh::verify() // verifies connectivity of the mesh and prints some debug info
 {
     std::cout << std::endl;
     // make sure that all vertices are mentioned at least once.
@@ -397,8 +387,8 @@ Mesh::verify() // verifies connectivity of the mesh and prints some debug info
     assert(std::find(map.begin(), map.end(), false) == map.end());
 
     // print some mesh statistics that can be useful in debugging
-    std::cout << "mesh has " << m_vertices.size() << " vertices, "
-              << m_faces.size() << " faces, " << m_edges.size() << " edges\n";
+    std::cout << "mesh has " << m_vertices.size() << " vertices, " << m_faces.size()
+              << " faces, " << m_edges.size() << " edges\n";
 
     unsigned total_boundary_edges = 0;
     double longest_edge = 0;
@@ -410,9 +400,8 @@ Mesh::verify() // verifies connectivity of the mesh and prints some debug info
         shortest_edge = std::min(shortest_edge, e.length());
     }
     std::cout << total_boundary_edges << " edges are boundary edges\n";
-    std::cout << "shortest/longest edges are " << shortest_edge << "/"
-              << longest_edge << " = " << shortest_edge / longest_edge
-              << std::endl;
+    std::cout << "shortest/longest edges are " << shortest_edge << "/" << longest_edge
+              << " = " << shortest_edge / longest_edge << std::endl;
 
     double minx = 1e100;
     double maxx = -1e100;
@@ -457,8 +446,8 @@ Mesh::verify() // verifies connectivity of the mesh and prints some debug info
     return true;
 }
 
-inline void fill_surface_point_structure(geodesic::SurfacePoint *point,
-                                         double *data, Mesh *mesh)
+inline void fill_surface_point_structure(geodesic::SurfacePoint *point, double *data,
+                                         Mesh *mesh)
 {
     point->set(data);
     unsigned type = (unsigned)data[3];
@@ -476,8 +465,8 @@ inline void fill_surface_point_structure(geodesic::SurfacePoint *point,
     }
 }
 
-inline void fill_surface_point_double(geodesic::SurfacePoint *point,
-                                      double *data, long mesh_id)
+inline void fill_surface_point_double(geodesic::SurfacePoint *point, double *data,
+                                      long mesh_id)
 {
     data[0] = point->x();
     data[1] = point->y();

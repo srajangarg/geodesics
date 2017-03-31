@@ -22,8 +22,7 @@ public:
     /** Check if the face has a given vertex. */
     bool hasVertex(Vertex const *vertex) const
     {
-        for (auto vi = vertices.begin(); vi != vertices.end();
-             ++vi)
+        for (auto vi = vertices.begin(); vi != vertices.end(); ++vi)
             if (*vi == vertex)
                 return true;
 
@@ -42,14 +41,14 @@ public:
 
     /** Get the predecessor of a vertex around the face. Assumes the iterator
      * points to a valid vertex of the face. */
-    Vertex const *getPredecessor(std::list<Vertex*>::iterator vertex) const
+    Vertex const *getPredecessor(std::list<Vertex *>::iterator vertex) const
     {
         return const_cast<Face *>(this)->getPredecessor(vertex);
     }
 
     /** Get the predecessor of a vertex around the face. Assumes the iterator
      * points to a valid vertex of the face. */
-    Vertex *getPredecessor(std::list<Vertex*>::iterator vertex)
+    Vertex *getPredecessor(std::list<Vertex *>::iterator vertex)
     {
         if (vertices.empty())
             return NULL;
@@ -72,8 +71,7 @@ public:
      * vertex does not belong to the face. */
     Vertex *getPredecessor(Vertex const *vertex)
     {
-        for (auto vi = vertices.begin(); vi != vertices.end();
-             ++vi)
+        for (auto vi = vertices.begin(); vi != vertices.end(); ++vi)
             if (*vi == vertex)
                 return getPredecessor(vi);
 
@@ -82,14 +80,14 @@ public:
 
     /** Get the successor of a vertex around the face. Assumes the iterator
      * points to a valid vertex of the face. */
-    Vertex const *getSuccessor(std::list<Vertex*>::iterator vertex) const
+    Vertex const *getSuccessor(std::list<Vertex *>::iterator vertex) const
     {
         return const_cast<Face *>(this)->getSuccessor(vertex);
     }
 
     /** Get the successor of a vertex around the face. Assumes the iterator
      * points to a valid vertex of the face. */
-    Vertex *getSuccessor(std::list<Vertex*>::iterator vertex)
+    Vertex *getSuccessor(std::list<Vertex *>::iterator vertex)
     {
         if (vertices.empty())
             return NULL;
@@ -110,8 +108,7 @@ public:
      * vertex does not belong to the face. */
     Vertex *getSuccessor(Vertex const *vertex)
     {
-        for (auto vi = vertices.begin(); vi != vertices.end();
-             ++vi)
+        for (auto vi = vertices.begin(); vi != vertices.end(); ++vi)
             if (*vi == vertex)
                 return getSuccessor(vi);
 
@@ -120,14 +117,14 @@ public:
 
     /** Get the predecessor of an edge around the face. Assumes the iterator
      * points to a valid edge of the face. */
-    Edge const *getPredecessor(std::list<Edge*>::iterator edge) const
+    Edge const *getPredecessor(std::list<Edge *>::iterator edge) const
     {
         return const_cast<Face *>(this)->getPredecessor(edge);
     }
 
     /** Get the predecessor of an edge around the face. Assumes the iterator
      * points to a valid edge of the face. */
-    Edge *getPredecessor(std::list<Edge*>::iterator edge)
+    Edge *getPredecessor(std::list<Edge *>::iterator edge)
     {
         if (edges.empty())
             return NULL;
@@ -159,14 +156,14 @@ public:
 
     /** Get the successor of an edge around the face. Assumes the iterator
      * points to a valid edge of the face. */
-    Edge const *getSuccessor(std::list<Edge*>::iterator edge) const
+    Edge const *getSuccessor(std::list<Edge *>::iterator edge) const
     {
         return const_cast<Face *>(this)->getSuccessor(edge);
     }
 
     /** Get the successor of an edge around the face. Assumes the iterator
      * points to a valid edge of the face. */
-    Edge *getSuccessor(std::list<Edge*>::iterator edge)
+    Edge *getSuccessor(std::list<Edge *>::iterator edge)
     {
         if (edges.empty())
             return NULL;
@@ -257,7 +254,7 @@ private:
     }
 
     /** Remove a reference to a vertex. */
-    std::list<Vertex*>::iterator removeVertex(std::list<Vertex*>::iterator loc)
+    std::list<Vertex *>::iterator removeVertex(std::list<Vertex *>::iterator loc)
     {
         return vertices.erase(loc);
     }
@@ -289,7 +286,7 @@ private:
     }
 
     /** Remove a reference to an edge. */
-    std::list<Edge*>::iterator removeEdge(std::list<Edge*>::iterator loc)
+    std::list<Edge *>::iterator removeEdge(std::list<Edge *>::iterator loc)
     {
         return edges.erase(loc);
     }
@@ -315,8 +312,8 @@ private:
 
     Vector3 normal;
     ColorRGBA color;
-    std::list<Vertex*> vertices;
-    std::list<Edge*> edges;
+    std::list<Vertex *> vertices;
+    std::list<Edge *> edges;
 
 }; // class Face
 

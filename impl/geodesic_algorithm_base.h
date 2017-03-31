@@ -17,8 +17,7 @@ public:
     enum AlgorithmType { EXACT, DIJKSTRA, SUBDIVISION, UNDEFINED_ALGORITHM };
 
     GeodesicAlgorithmBase(geodesic::Mesh *mesh)
-        : m_type(UNDEFINED_ALGORITHM), m_max_propagation_distance(1e100),
-          m_mesh(mesh){};
+        : m_type(UNDEFINED_ALGORITHM), m_max_propagation_distance(1e100), m_mesh(mesh){};
 
     virtual ~GeodesicAlgorithmBase(){};
 
@@ -30,15 +29,13 @@ public:
                            std::vector<SurfacePoint> *stop_points = NULL)
         = 0; // or after ensuring that all the stop_points are covered
 
-    virtual void
-    trace_back(SurfacePoint &destination, // trace back piecewise-linear path
-               std::vector<SurfacePoint> &path)
+    virtual void trace_back(SurfacePoint &destination, // trace back piecewise-linear path
+                            std::vector<SurfacePoint> &path)
         = 0;
 
-    void geodesic(
-        SurfacePoint &source, SurfacePoint &destination,
-        std::vector<SurfacePoint>
-            &path); // lazy people can find geodesic path with one function call
+    void geodesic(SurfacePoint &source, SurfacePoint &destination,
+                  std::vector<SurfacePoint>
+                      &path); // lazy people can find geodesic path with one function call
 
     void geodesic(std::vector<SurfacePoint> &sources,
                   std::vector<SurfacePoint> &destinations,
@@ -166,8 +163,9 @@ inline void GeodesicAlgorithmBase::geodesic(
     }
 }
 
-inline void GeodesicAlgorithmBase::set_stop_conditions(
-    std::vector<SurfacePoint> *stop_points, double stop_distance)
+inline void
+GeodesicAlgorithmBase::set_stop_conditions(std::vector<SurfacePoint> *stop_points,
+                                           double stop_distance)
 {
     m_max_propagation_distance = stop_distance;
 

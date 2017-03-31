@@ -25,10 +25,8 @@ double const SMALLEST_INTERVAL_RATIO = 1e-6;
 // double const SMALL_EPSILON = 1e-10;
 
 inline double cos_from_edges(
-    double const
-        a, // compute the cosine of the angle given the lengths of the edges
-    double const b,
-    double const c)
+    double const a, // compute the cosine of the angle given the lengths of the edges
+    double const b, double const c)
 {
     assert(a > 1e-50);
     assert(b > 1e-50);
@@ -40,10 +38,8 @@ inline double cos_from_edges(
 }
 
 inline double angle_from_edges(
-    double const
-        a, // compute the cosine of the angle given the lengths of the edges
-    double const b,
-    double const c)
+    double const a, // compute the cosine of the angle given the lengths of the edges
+    double const b, double const c)
 {
     return acos(cos_from_edges(a, b, c));
 }

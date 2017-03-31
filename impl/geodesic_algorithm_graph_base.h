@@ -16,22 +16,19 @@ class GeodesicAlgorithmGraphBase : public GeodesicAlgorithmBase
 public:
     typedef Node *node_pointer;
 
-    GeodesicAlgorithmGraphBase(geodesic::Mesh *mesh)
-        : GeodesicAlgorithmBase(mesh){};
+    GeodesicAlgorithmGraphBase(geodesic::Mesh *mesh) : GeodesicAlgorithmBase(mesh){};
 
     ~GeodesicAlgorithmGraphBase(){};
 
-    void
-    propagate(std::vector<SurfacePoint> &sources,
-              double max_propagation_distance
-              = GEODESIC_INF, // propagation algorithm stops after reaching the
-                              // certain distance from the source
-              std::vector<SurfacePoint> *stop_points
-              = NULL); // or after ensuring that all the stop_points are covered
+    void propagate(std::vector<SurfacePoint> &sources,
+                   double max_propagation_distance
+                   = GEODESIC_INF, // propagation algorithm stops after reaching the
+                                   // certain distance from the source
+                   std::vector<SurfacePoint> *stop_points
+                   = NULL); // or after ensuring that all the stop_points are covered
 
-    void
-    trace_back(SurfacePoint &destination, // trace back piecewise-linear path
-               std::vector<SurfacePoint> &path);
+    void trace_back(SurfacePoint &destination, // trace back piecewise-linear path
+                    std::vector<SurfacePoint> &path);
 
     unsigned best_source(SurfacePoint &point, // quickly find what source this
                                               // point belongs to and what is
@@ -43,14 +40,12 @@ public:
         GeodesicAlgorithmBase::print_statistics();
 
         double memory = m_nodes.size() * sizeof(Node);
-        std::cout << "uses about " << memory / 1e6 << "Mb of memory"
-                  << std::endl;
+        std::cout << "uses about " << memory / 1e6 << "Mb of memory" << std::endl;
     }
 
 protected:
-    unsigned
-    node_index(vertex_pointer
-                   v) // gives index of the node that corresponds to this vertex
+    unsigned node_index(
+        vertex_pointer v) // gives index of the node that corresponds to this vertex
     {
         return v->id();
     };
@@ -60,8 +55,7 @@ protected:
         m_sources = sources;
     }
 
-    node_pointer best_first_node(SurfacePoint &point,
-                                 double &best_total_distance)
+    node_pointer best_first_node(SurfacePoint &point, double &best_total_distance)
     {
         node_pointer best_node = NULL;
         if (point.type() == VERTEX) {
@@ -70,8 +64,7 @@ protected:
             best_total_distance = best_node->distance_from_source();
         } else {
             std::vector<node_pointer> possible_nodes;
-            list_nodes_visible_from_source(point.base_element(),
-                                           possible_nodes);
+            list_nodes_visible_from_source(point.base_element(), possible_nodes);
 
             best_total_distance = GEODESIC_INF;
             for (unsigned i = 0; i < possible_nodes.size(); ++i) {
@@ -89,8 +82,7 @@ protected:
 
         // assert(best_node);
         // assert(best_total_distance<GEODESIC_INF);
-        if (best_total_distance
-            > m_propagation_distance_stopped) // result is unreliable
+        if (best_total_distance > m_propagation_distance_stopped) // result is unreliable
         {
             best_total_distance = GEODESIC_INF;
             return NULL;
@@ -99,12 +91,10 @@ protected:
         }
     }; // quickly find what node will be the next one in geodesic path
 
-    bool check_stop_conditions(
-        unsigned &index); // check when propagation should stop
+    bool check_stop_conditions(unsigned &index); // check when propagation should stop
 
-    virtual void
-    list_nodes_visible_from_source(MeshElementBase *p,
-                                   std::vector<node_pointer> &storage)
+    virtual void list_nodes_visible_from_source(MeshElementBase *p,
+                                                std::vector<node_pointer> &storage)
         = 0; // list all nodes that belong to this mesh element
 
     virtual void list_nodes_visible_from_node(
@@ -119,8 +109,7 @@ protected:
     typedef std::set<node_pointer, Node> queue_type;
     queue_type m_queue;
 
-    std::vector<SurfacePoint>
-        m_sources; // for simplicity, we keep sources as they are
+    std::vector<SurfacePoint> m_sources; // for simplicity, we keep sources as they are
 };
 
 template <class Node>
@@ -187,8 +176,7 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(
 
         visible_nodes.clear();
         distances_between_nodes.clear();
-        list_nodes_visible_from_node(min_node, visible_nodes,
-                                     distances_between_nodes,
+        list_nodes_visible_from_node(min_node, visible_nodes, distances_between_nodes,
                                      min_node->distance_from_source());
 
         for (unsigned i = 0; i < visible_nodes.size();
@@ -197,19 +185,16 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(
             node_pointer next_node = visible_nodes[i];
 
             if (next_node->distance_from_source()
-                > min_node->distance_from_source()
-                      + distances_between_nodes[i]) {
+                > min_node->distance_from_source() + distances_between_nodes[i]) {
                 if (next_node->distance_from_source()
                     < GEODESIC_INF) // remove it from the queue
                 {
-                    typename queue_type::iterator iter
-                        = m_queue.find(next_node);
+                    typename queue_type::iterator iter = m_queue.find(next_node);
                     assert(iter != m_queue.end());
                     m_queue.erase(iter);
                 }
                 next_node->distance_from_source()
-                    = min_node->distance_from_source()
-                      + distances_between_nodes[i];
+                    = min_node->distance_from_source() + distances_between_nodes[i];
                 next_node->source_index() = min_node->source_index();
                 next_node->previous() = min_node;
                 m_queue.insert(next_node);
@@ -218,17 +203,15 @@ void GeodesicAlgorithmGraphBase<Node>::propagate(
     }
 
     m_propagation_distance_stopped
-        = m_queue.empty() ? GEODESIC_INF
-                          : (*m_queue.begin())->distance_from_source();
+        = m_queue.empty() ? GEODESIC_INF : (*m_queue.begin())->distance_from_source();
     clock_t finish = clock();
-    m_time_consumed = (static_cast<double>(finish) - static_cast<double>(start))
-                      / CLOCKS_PER_SEC;
+    m_time_consumed
+        = (static_cast<double>(finish) - static_cast<double>(start)) / CLOCKS_PER_SEC;
     // std::cout << std::endl;
 }
 
 template <class Node>
-inline bool
-GeodesicAlgorithmGraphBase<Node>::check_stop_conditions(unsigned &index)
+inline bool GeodesicAlgorithmGraphBase<Node>::check_stop_conditions(unsigned &index)
 {
     double queue_min_distance = (*m_queue.begin())->distance_from_source();
 

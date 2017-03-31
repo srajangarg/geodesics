@@ -13,7 +13,6 @@ class Edge
 {
 
 public:
-
     /** Construct from two endpoints. */
     Edge(Vertex *v0 = NULL, Vertex *v1 = NULL)
     {
@@ -65,8 +64,7 @@ public:
      * negative value if the neither endpoint matches. */
     int getEndpointIndex(Vertex const *endpoint) const
     {
-        return endpoints[0] == endpoint ? 0
-                                        : (endpoints[1] == endpoint ? 1 : -1);
+        return endpoints[0] == endpoint ? 0 : (endpoints[1] == endpoint ? 1 : -1);
     }
 
     /** Check if the edge has a given vertex as an endpoint. */
@@ -88,8 +86,7 @@ public:
     /** Check if two edges share the same endpoints. */
     bool isCoincidentTo(Edge const &other) const
     {
-        return (endpoints[0] == other.endpoints[0]
-                && endpoints[1] == other.endpoints[1])
+        return (endpoints[0] == other.endpoints[0] && endpoints[1] == other.endpoints[1])
                || (endpoints[0] == other.endpoints[1]
                    && endpoints[1] == other.endpoints[0]);
     }
@@ -97,8 +94,7 @@ public:
     /** Check if this edge shares an endpoint with another. */
     bool isConnectedTo(Edge const &other) const
     {
-        return (endpoints[0] == other.endpoints[0]
-                || endpoints[1] == other.endpoints[1]
+        return (endpoints[0] == other.endpoints[0] || endpoints[1] == other.endpoints[1]
                 || endpoints[0] == other.endpoints[1]
                 || endpoints[1] == other.endpoints[0]);
     }
@@ -198,7 +194,7 @@ private:
     }
 
     /** Remove a face incident on this edge. */
-    std::list<Face*>::iterator removeFace(std::list<Face*>::iterator loc)
+    std::list<Face *>::iterator removeFace(std::list<Face *>::iterator loc)
     {
         return faces.erase(loc);
     }
@@ -218,7 +214,7 @@ private:
     }
 
     Vertex *endpoints[2];
-    std::list<Face*> faces;
+    std::list<Face *> faces;
 
 }; // class Edge
 

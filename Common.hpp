@@ -1,5 +1,5 @@
-#ifndef __A2_Common_hpp__
-#define __A2_Common_hpp__
+#ifndef ___Common_hpp__
+#define ___Common_hpp__
 
 #include "DGP/Common.hpp"
 #include "DGP/Matrix4.hpp"

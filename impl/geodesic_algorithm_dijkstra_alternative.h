@@ -81,9 +81,8 @@ public:
               std::vector<SurfacePoint> *stop_points
               = NULL); // or after ensuring that all the stop_points are covered
 
-    virtual void
-    trace_back(SurfacePoint &destination, // trace back piecewise-linear path
-               std::vector<SurfacePoint> &path);
+    virtual void trace_back(SurfacePoint &destination, // trace back piecewise-linear path
+                            std::vector<SurfacePoint> &path);
 
     virtual unsigned best_source(SurfacePoint &point, // quickly find what
                                                       // source this point
@@ -100,11 +99,9 @@ private:
 
     bool check_stop_conditions(unsigned &index);
 
-    std::vector<Node>
-        m_nodes; // nodes of the subdivision graph located on the vertices
+    std::vector<Node> m_nodes; // nodes of the subdivision graph located on the vertices
 
-    std::vector<SurfacePoint>
-        m_sources; // for simplicity, we keep sources as they are
+    std::vector<SurfacePoint> m_sources; // for simplicity, we keep sources as they are
 
     typedef std::set<node_pointer, Node> queue_type;
     queue_type m_queue;
@@ -131,13 +128,10 @@ inline unsigned GeodesicAlgorithmDijkstraAlternative::best_source(
         for (unsigned i = 0; i < possible_vertices.size(); ++i) {
             vertex_pointer v = possible_vertices[i];
 
-            double distance_from_source
-                = m_nodes[v->id()].distance_from_source();
+            double distance_from_source = m_nodes[v->id()].distance_from_source();
             double distance_from_dest = v->distance(&point);
-            if (distance_from_source + distance_from_dest
-                < best_source_distance) {
-                best_source_distance
-                    = distance_from_source + distance_from_dest;
+            if (distance_from_source + distance_from_dest < best_source_distance) {
+                best_source_distance = distance_from_source + distance_from_dest;
                 min_vertex = v;
             }
         }
@@ -166,8 +160,7 @@ inline void GeodesicAlgorithmDijkstraAlternative::trace_back(
         for (unsigned i = 0; i < possible_vertices.size(); ++i) {
             vertex_pointer v = possible_vertices[i];
 
-            double distance_from_source
-                = m_nodes[v->id()].distance_from_source();
+            double distance_from_source = m_nodes[v->id()].distance_from_source();
             double distance_from_dest = v->distance(&destination);
             if (distance_from_source + distance_from_dest < min_distance) {
                 min_distance = distance_from_source + distance_from_dest;
@@ -188,8 +181,7 @@ inline void GeodesicAlgorithmDijkstraAlternative::trace_back(
     SurfacePoint &source = m_sources[node->source_index()]; // add source to the
                                                             // path if it is not
                                                             // already there
-    if (source.type() != VERTEX
-        || source.base_element()->id() != node->vertex()->id()) {
+    if (source.type() != VERTEX || source.base_element()->id() != node->vertex()->id()) {
         path.push_back(source);
     }
 }
@@ -284,12 +276,11 @@ inline void GeodesicAlgorithmDijkstraAlternative::propagate(
     // std::cout << std::endl;
 
     clock_t finish = clock();
-    m_time_consumed = (static_cast<double>(finish) - static_cast<double>(start))
-                      / CLOCKS_PER_SEC;
+    m_time_consumed
+        = (static_cast<double>(finish) - static_cast<double>(start)) / CLOCKS_PER_SEC;
 }
 
-inline bool
-GeodesicAlgorithmDijkstraAlternative::check_stop_conditions(unsigned &index)
+inline bool GeodesicAlgorithmDijkstraAlternative::check_stop_conditions(unsigned &index)
 {
     double queue_min_distance = (*m_queue.begin())->distance_from_source();
 

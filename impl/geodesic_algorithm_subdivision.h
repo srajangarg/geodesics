@@ -89,8 +89,7 @@ private:
     node_pointer m_previous; // previous node in the geodesic path
 };
 
-class GeodesicAlgorithmSubdivision
-    : public GeodesicAlgorithmGraphBase<SubdivisionNode>
+class GeodesicAlgorithmSubdivision : public GeodesicAlgorithmGraphBase<SubdivisionNode>
 {
     typedef SubdivisionNode Node;
 
@@ -128,8 +127,7 @@ public:
         for (unsigned i = 0; i < m_mesh->edges().size(); ++i) {
             edge_pointer e = &m_mesh->edges()[i];
             for (unsigned i = 0; i < subdivision_level; ++i) {
-                double offset
-                    = (double)(i + 1) / (double)(subdivision_level + 1);
+                double offset = (double)(i + 1) / (double)(subdivision_level + 1);
                 m_nodes.push_back(Node(e, offset));
             }
         }
@@ -153,21 +151,20 @@ protected:
     };
 
 private:
-    void list_nodes(
-        MeshElementBase *p, // list nodes that belong to this mesh element
-        std::vector<node_pointer> &storage,
-        double threshold_distance = -1.0); // list only the nodes whose current
-                                           // distance is larger than the
-                                           // threshold
+    void list_nodes(MeshElementBase *p, // list nodes that belong to this mesh element
+                    std::vector<node_pointer> &storage,
+                    double threshold_distance
+                    = -1.0); // list only the nodes whose current
+                             // distance is larger than the
+                             // threshold
 
     unsigned m_subdivision_level; // when level is equal to 1, this algorithm
                                   // corresponds to the Dijkstra algorithm
 };
 
-inline void
-GeodesicAlgorithmSubdivision::list_nodes(MeshElementBase *p,
-                                         std::vector<node_pointer> &storage,
-                                         double threshold_distance)
+inline void GeodesicAlgorithmSubdivision::list_nodes(MeshElementBase *p,
+                                                     std::vector<node_pointer> &storage,
+                                                     double threshold_distance)
 {
     assert(p->type() != UNDEFINED_POINT);
 

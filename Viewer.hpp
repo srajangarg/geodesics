@@ -1,5 +1,5 @@
-#ifndef __A2_Viewer_hpp__
-#define __A2_Viewer_hpp__
+#ifndef ___Viewer_hpp__
+#define ___Viewer_hpp__
 
 #include "Common.hpp"
 #include "DGP/AxisAlignedBox3.hpp"

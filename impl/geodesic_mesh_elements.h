@@ -345,9 +345,8 @@ public:
         multiply(1. / 3.);
     };
 
-    SurfacePoint(
-        edge_pointer e, // set the surface point in the middle of the edge
-        double a = 0.5)
+    SurfacePoint(edge_pointer e, // set the surface point in the middle of the edge
+                 double a = 0.5)
         : m_p(e)
     {
         double b = 1 - a;

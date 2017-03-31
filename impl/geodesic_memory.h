@@ -19,8 +19,7 @@ class SimlpeMemoryAllocator
 public:
     typedef T *pointer;
 
-    SimlpeMemoryAllocator(unsigned block_size = 0,
-                          unsigned max_number_of_blocks = 0)
+    SimlpeMemoryAllocator(unsigned block_size = 0, unsigned max_number_of_blocks = 0)
     {
         reset(block_size, max_number_of_blocks);
     };
@@ -69,8 +68,7 @@ class MemoryAllocator
 public:
     typedef T *pointer;
 
-    MemoryAllocator(unsigned block_size = 1024,
-                    unsigned max_number_of_blocks = 1024)
+    MemoryAllocator(unsigned block_size = 1024, unsigned max_number_of_blocks = 1024)
     {
         reset(block_size, max_number_of_blocks);
     };

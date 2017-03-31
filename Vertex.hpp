@@ -9,8 +9,8 @@
 //
 //============================================================================
 
-#ifndef __A2_Vertex_hpp__
-#define __A2_Vertex_hpp__
+#ifndef ___Vertex_hpp__
+#define ___Vertex_hpp__
 
 #include "Common.hpp"
 #include "DGP/Colors.hpp"
@@ -41,8 +41,7 @@ public:
     }
 
     /** Sets the vertex to have a location, normal and color. */
-    Vertex(Vector3 const &p, Vector3 const &n,
-               ColorRGBA const &c = ColorRGBA(1, 1, 1, 1))
+    Vertex(Vector3 const &p, Vector3 const &n, ColorRGBA const &c = ColorRGBA(1, 1, 1, 1))
         : position(p), normal(n), color(c), has_precomputed_normal(true),
           normal_normalization_factor(0)
     {
@@ -108,6 +107,7 @@ public:
     /** Set the position of the vertex. */
     void setPosition(Vector3 const &position_)
     {
+        update_saddle_or_boundary();
         position = position_;
     }
 
@@ -158,7 +158,7 @@ private:
     }
 
     /** Remove a reference to an edge incident at this vertex. */
-    std::list<Edge*>::iterator removeEdge(std::list<Edge*>::iterator loc)
+    std::list<Edge *>::iterator removeEdge(std::list<Edge *>::iterator loc)
     {
         return edges.erase(loc);
     }
@@ -230,12 +230,19 @@ private:
         }
     }
 
+    void update_saddle_or_boundary()
+    {
+        // FILL
+        // set bool saddle_or_boundary accordingly
+    }
+
     Vector3 position;
     Vector3 normal;
     ColorRGBA color;
-    std::list<Edge*> edges;
-    std::list<Face*> faces;
+    std::list<Edge *> edges;
+    std::list<Face *> faces;
     bool has_precomputed_normal;
+    bool saddle_or_boundary;
     float normal_normalization_factor;
 
 }; // class Vertex
