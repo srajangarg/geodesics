@@ -236,8 +236,8 @@ public:
         return vertices.size() == 4;
     }
 
-    //get angle on this face at this vertex 
-    double getAngle(Vertex* v);
+    // get angle on this face at this vertex
+    double getAngle(Vertex *v);
 
     /**
      * Test if the face contains a point (which is assumed to lie on the plane

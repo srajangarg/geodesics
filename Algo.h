@@ -7,18 +7,17 @@ using namespace std;
 class Interval
 {
 public:
-
     Vector2 pos;
     double st, end, ps_d;
     double min_d;
 
-    Edge* edge;
-    Face* from;
+    Edge *edge;
+    Face *from;
 
-    Interval(double x_, double y_, double st_, double end_, double ps_d_, Face* from_,
+    Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
              Edge *edge_)
         : st(st_), end(end_), ps_d(ps_d_)
-    {   
+    {
         pos = Vector2(x_, y_);
         edge = edge_;
         from = from_;
@@ -27,13 +26,13 @@ public:
         recompute_min_d();
     }
 
-    Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face* from_,
+    Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *from_,
              Edge *edge_)
         : pos(pos_), st(st_), end(end_), ps_d(ps_d_)
-    {   
+    {
         edge = edge_;
         from = from_;
-        
+
         assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
         recompute_min_d();
     }
@@ -43,12 +42,12 @@ public:
         Vector2 st_v(st, 0);
         Vector2 end_v(end, 0);
 
-        if(pos.x() >= st and pos.x() <= end)
-        	min_d = pos.y();
-        else if(pos.x() < st)
-        	min_d = (pos-st_v).length();
-		else
-			min_d = (pos-end_v).length();
+        if (pos.x() >= st and pos.x() <= end)
+            min_d = pos.y();
+        else if (pos.x() < st)
+            min_d = (pos - st_v).length();
+        else
+            min_d = (pos - end_v).length();
     }
 
     double compute_max_d()
@@ -56,11 +55,11 @@ public:
         Vector2 st_v(st, 0);
         Vector2 end_v(end, 0);
 
-        if (pos.x() >= (st + end)/2.0)
+        if (pos.x() >= (st + end) / 2.0)
             return (pos - st_v).length();
         else
             return (pos - end_v).length();
-	}
+    }
 
     bool operator<(const Interval &rhs) const
     {
@@ -85,7 +84,7 @@ public:
 
     MMP(Mesh *m, Point *s, Point *d) : mesh(m), source(s)
     {
-        // assert(s->ptype != UNDEFINED);
+        assert(s->ptype != Point::UNDEFINED);
         destinations.push_back(d);
     }
 
@@ -100,12 +99,11 @@ public:
         // removes first element of set, and propagates accordingly once
 
         Interval prop_w = *intervals_heap.begin();
-        Edge* prop_e = prop_w.edge;
+        Edge *prop_e = prop_w.edge;
 
         intervals_heap.erase(intervals_heap.begin());
 
-        for (auto &face : prop_e->faces)
-        {
+        for (auto &face : prop_e->faces) {
             if (prop_w.from == face)
                 continue;
 
@@ -121,7 +119,8 @@ public:
         }
     }
 
-    vector<Interval> source_bisect(double st, double end, const Interval &i1, const Interval& i2)
+    vector<Interval> source_bisect(double st, double end, const Interval &i1,
+                                   const Interval &i2)
     {
         // takes in  a segment st-end and returns 1or2 interval
         // with the closest source indicated on each interval
@@ -130,28 +129,23 @@ public:
         Vector2 st_v(st, 0), end_v(end, 0);
 
         vector<Interval> b_intervals;
-        // FIX  double x = (ps2.squaredLength() - ps1.squaredLength())/(2.0*(ps2.x() - ps1.x()));
+        // FIX  INCOORECT double x = (ps2.squaredLength() - ps1.squaredLength())/(2.0*(ps2.x() -
+        // ps1.x()));
         double x = 0.0;
         // (x, 0) is equidistant from ps1 and ps2
 
-        if(x >= st and x <= end)
-        {   
+        if (x >= st and x <= end) {
             // [st, x] closer to ps1 or ps2?
-            if ((st_v-ps1).squaredLength() < (st_v-ps2).squaredLength())
-            {
+            if ((st_v - ps1).squaredLength() < (st_v - ps2).squaredLength()) {
                 b_intervals.push_back(Interval(ps1, st, x, i1.ps_d, i1.from, i1.edge));
                 b_intervals.push_back(Interval(ps2, x, end, i2.ps_d, i2.from, i2.edge));
-            }
-            else
-            {
+            } else {
                 b_intervals.push_back(Interval(ps2, st, x, i2.ps_d, i2.from, i2.edge));
                 b_intervals.push_back(Interval(ps1, x, end, i1.ps_d, i1.from, i1.edge));
             }
-        }
-        else
-        {
-        	//the complete interval is near to one single source
-        	if((ps2-st_v).squaredLength() < (ps1-st_v).squaredLength())
+        } else {
+            // the complete interval is near to one single source
+            if ((ps2 - st_v).squaredLength() < (ps1 - st_v).squaredLength())
                 b_intervals.push_back(Interval(ps2, st, end, i2.ps_d, i2.from, i2.edge));
             else
                 b_intervals.push_back(Interval(ps1, st, end, i1.ps_d, i1.from, i1.edge));
@@ -160,10 +154,10 @@ public:
         return b_intervals;
     }
 
-    vector<Interval> sanitize_and_merge(vector<Interval>& intervals)
+    vector<Interval> sanitize_and_merge(vector<Interval> &intervals)
     {
         // FILL
-
+        // remove too small intervals, merge intervals with same pos and ps_d etc.
         return {};
     }
 
@@ -173,91 +167,83 @@ public:
         // updates edge_intervals[e] and intervals according to algo discussed
         // should be O(edge_intervals[e])
 
-        auto & intervals = edge_intervals[e];
+        auto &intervals = edge_intervals[e];
         vector<Interval> new_intervals;
         bool new_pushed = false;
 
         auto it = intervals.begin();
-        for (; it != intervals.end(); it++)
-        {
+        for (; it != intervals.end(); it++) {
             auto w = *it;
 
-            if (new_pushed) break;
+            if (new_pushed)
+                break;
 
-            if (w->st >= new_w.end)
-            {
+            if (w->st >= new_w.end) {
                 // ----new----
                 //               -----w-----
                 new_intervals.push_back(new_w);
                 new_intervals.push_back(*w);
                 new_pushed = true;
-            }
-            else if (w->end <= new_w.st)
-            {
+            } else if (w->end <= new_w.st) {
                 //             -----new-----
                 // ----w----
                 new_intervals.push_back(*w);
-            }
-            else if (w->st < new_w.st and w->end <= new_w.end)
-            {
+            } else if (w->st < new_w.st and w->end <= new_w.end) {
                 //       -------new------
                 // ------w--------
 
-                Interval w_short(*w); w_short.end = new_w.st;
+                Interval w_short(*w);
+                w_short.end = new_w.st;
 
                 new_intervals.push_back(w_short);
                 for (auto &interval : source_bisect(new_w.st, w->end, *w, new_w))
                     new_intervals.push_back(interval);
 
                 new_w.st = w->end;
-            }
-            else if (w->st >= new_w.st and w->end > new_w.end)
-            {
+            } else if (w->st >= new_w.st and w->end > new_w.end) {
                 // ------new------
                 //        -----w--------
 
-                Interval new_w_short(new_w); new_w_short.end = w->st;
+                Interval new_w_short(new_w);
+                new_w_short.end = w->st;
                 new_intervals.push_back(new_w_short);
                 for (auto &interval : source_bisect(w->st, new_w.end, new_w, *w))
                     new_intervals.push_back(interval);
-                Interval w_short(*w); w_short.st = new_w.end;
+                Interval w_short(*w);
+                w_short.st = new_w.end;
                 new_intervals.push_back(w_short);
 
                 new_pushed = true;
-            }
-            else if (w->st >= new_w.st and w->end <= new_w.end)
-            {
+            } else if (w->st >= new_w.st and w->end <= new_w.end) {
                 // --------new----------
                 //      -----w-----
 
-                Interval new_w_short(new_w); new_w_short.end = w->st;
+                Interval new_w_short(new_w);
+                new_w_short.end = w->st;
                 new_intervals.push_back(new_w_short);
                 for (auto &interval : source_bisect(w->st, w->end, new_w, *w))
                     new_intervals.push_back(interval);
                 new_w.st = w->end;
-            }
-            else if (w->st < new_w.st and w->end > new_w.end)
-            {
+            } else if (w->st < new_w.st and w->end > new_w.end) {
                 //     ----new----
                 //  ----------w-------
 
-                Interval w_short1(*w); w_short1.end = new_w.st;
+                Interval w_short1(*w);
+                w_short1.end = new_w.st;
                 new_intervals.push_back(w_short1);
                 for (auto &interval : source_bisect(new_w.st, new_w.end, new_w, *w))
                     new_intervals.push_back(interval);
-                Interval w_short2(*w); w_short2.st = new_w.end;
+                Interval w_short2(*w);
+                w_short2.st = new_w.end;
                 new_intervals.push_back(w_short2);
                 new_pushed = true;
-            }
-            else
-            {
+            } else {
                 // should never be reached
                 assert(false);
             }
         }
 
-        if (not new_pushed)
-        {
+        if (not new_pushed) {
             assert(it == intervals.end());
             new_intervals.push_back(new_w);
         }
@@ -271,8 +257,8 @@ public:
 
         auto sanitized_new_intervals = sanitize_and_merge(new_intervals);
 
-        for (auto interval : sanitized_new_intervals)
-        {
+        for (auto interval : sanitized_new_intervals) {
+            interval.recompute_min_d();
             auto pp = intervals_heap.insert(interval);
             assert(pp.second);
             intervals.push_back(pp.first);
@@ -286,20 +272,43 @@ public:
         // guaranteed that e is adjacent to the edge on which w lies
         // return vector of candidate intervals
 
-        Edge* prop_e = w.edge;
-
+        Edge *prop_e = w.edge;
 
         return {};
     }
 
-    void initialize()
+    bool check_mesh_sanity()
     {
         // FILL
-        // insert edges which correspond to the source vertex
-        // see `list_edges_visible_from_source` in `geodesics_algo_exact.h`
         // check mesh preconditions and sanity
         // all edges have 1/2 faces
         // each face has 3 edges, 3 vertices
+        return false;
+    };
+
+    void initialize()
+    {
+        // FILL
+        assert(check_mesh_sanity());
+
+        switch (source->ptype) {
+            case Point::VERTEX:
+
+                // FIX should it be 0.0 or edgelength????
+                // invert wale pains???
+
+                for (auto &e : ((Vertex *)(source->p))->edges) {
+                    Interval ii(0, 0, 0, e->length(), 0, NULL, e);
+                    insert_new_interval(e, ii);
+                }
+                break;
+
+            case Point::EDGE:
+                break;
+
+            case Point::FACE:
+                break;
+        }
     }
 
     void algorithm()
@@ -307,11 +316,9 @@ public:
         // FILL
         initialize();
 
-        while(not intervals_heap.empty() and not terminate())
-        {
+        while (not intervals_heap.empty() and not terminate()) {
             propagate();
         }
-
     }
 
     bool terminate()

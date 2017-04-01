@@ -80,8 +80,8 @@ bool Face::contains(Vector3 const &p) const
     return (count % 2 == 1);
 }
 
-double Face::getAngle(Vertex* v)
-{   
+double Face::getAngle(Vertex *v)
+{
     assert(hasVertex(v));
     // FILL
     return 0.0;

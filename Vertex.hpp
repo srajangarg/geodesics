@@ -149,7 +149,7 @@ public:
         color = color_;
     }
 
-private:
+public:
     friend class Mesh;
 
     /** Add a reference to an edge incident at this vertex. */

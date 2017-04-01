@@ -71,12 +71,9 @@ void Vertex::updateNormal()
 void Vertex::update_saddle_or_boundary()
 {
     saddle_or_boundary = false;
-    if(isBoundary())
-    {
+    if (isBoundary()) {
         saddle_or_boundary = true;
-    }
-    else
-    {
+    } else {
         double angle = 0.0;
         for (auto fi = faces.begin(); fi != faces.end(); ++fi)
             angle += (*fi)->getAngle(this);
