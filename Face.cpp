@@ -1,5 +1,6 @@
 #include "Face.hpp"
 #include "Vertex.hpp"
+#include "Edge.hpp"
 
 void Face::updateNormal()
 {
@@ -83,6 +84,31 @@ bool Face::contains(Vector3 const &p) const
 double Face::getAngle(Vertex* v)
 {   
     assert(hasVertex(v));
+    Edge* e1 = NULL;
+    Edge* e2 = NULL;
+    for (auto it = v->edges.begin(); it != v->edges.end(); ++it)
+    {
+        if (hasEdge(*it))
+        {
+            if (e1 == NULL)
+                e1 = *it;
+            else
+                e2 = *it;
+        }
+    }
+
+    Vector3 edge1, edge2;
+    if (e1->getEndpoint(1)->getPosition() == v->getPosition())
+        edge1 = e1->getEndpoint(0)->getPosition() - e1->getEndpoint(1)->getPosition();
+    else
+        edge1 = e1->getEndpoint(1)->getPosition() - e1->getEndpoint(0)->getPosition();
+
+    if (e2->getEndpoint(1)->getPosition() == v->getPosition())
+        edge2 = e2->getEndpoint(0)->getPosition() - e2->getEndpoint(1)->getPosition();
+    else
+        edge2 = e2->getEndpoint(1)->getPosition() - e2->getEndpoint(0)->getPosition();
+
+    double angle = acos((edge1).dot(edge2)/sqrt((edge1).squaredLength() * (edge2).squaredLength()));
     // FILL
-    return 0.0;
+    return angle;
 }

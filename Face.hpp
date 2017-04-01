@@ -246,7 +246,7 @@ public:
      */
     bool contains(Vector3 const &p) const;
 
-private:
+public:
     friend class Mesh;
     friend class Edge;
 
