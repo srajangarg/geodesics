@@ -40,14 +40,29 @@ public:
 
     void recompute_min_d()
     {
-        // FILL
+        // FILL - DONE
+        Vector2 st_v(st, 0);
+        Vector2 end_v(end, 0);
+        if(pos.x() > st and pos.x() < end)
+        	min_d = pos.y();
+        else if(pos.x() < st)
+        	min_d = pos.distance(st_v);
+		else
+			min_d = pos.distance(end_v);
     }
 
     double compute_max_d()
     {
-        // FILL
-        return 0.0;
-    }
+        // FILL - DONE
+        Vector2 st_v(st, 0);
+        Vector2 end_v(end, 0);
+        if(pos.x() > st and pos.x() < end)
+        	return max(pos.distance(st_v), pos.distance(end_v));
+        else if(pos.x() < st)
+        	return pos.distance(end_v);
+		else
+			return pos.distance(st_v);
+	}
 
     bool operator<(const Interval &rhs)
     {
@@ -110,9 +125,43 @@ public:
 
     vector<Interval> source_bisect(double st, double end, Vector2 ps1, Vector2 ps2)
     {
-        // FILL
+        // FILL - DONE
         // takes in  a segment st-end and returns 1or2 interval
         // with the closest source indicated on each interval
+        Vector2 st_v(st, 0);
+        Vector2 end_v(end, 0);
+
+        vector<Interval> bisected_intervals;
+
+        double x = (ps2.squaredLength() - ps1.squaredLength())/(2.0*(ps2.x() - ps1.x()));
+        //(x, 0) is equidistant from ps1 and ps2
+        if(x > st and x < end)
+        {
+        	//push two intervals
+        	//check if [st, x] has source ps1 or ps2
+        	if(ps2.distance(st_v) < ps2.distance(end_v))
+        		swap(ps1, ps2);
+
+        	// (Vector2 pos_, double st_, double end_, double ps_d_, Face* from_,
+             // Edge *edge_)
+        	//can pass min_d as 0.0 since it is recomputed in constructor
+        	Interval bisec_interval_1(ps1, st, x, 0.0, face, edge);
+        	Interval bisec_interval_2(ps2, x, end, 0.0, face, edge);
+
+        	bisected_intervals.push_back(bisec_interval_1);
+        	bisected_intervals.push_back(bisec_interval_2);
+        }
+        else
+        {
+        	//the complete interval is near to one single source
+        	if(ps2.distance(start) < ps1.distance(start))
+        		swap(ps1, ps2);
+
+        	Interval bisec_interval_1(ps1, st, end, 0.0, face, edge);
+        	bisected_intervals.push_back(bisec_interval_1);
+        }
+
+        return bisected_intervals;
     }
 
     void insert_new_interval(Edge *e, Interval &new_w)

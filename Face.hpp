@@ -236,6 +236,17 @@ public:
         return vertices.size() == 4;
     }
 
+    //get angle on this face at this vertex 
+    double getAngle(Vector3 const position)
+    {
+        Edge * e1, e2;
+        for (auto ei = edges.begin(); ei != edges.end(); ++ei)
+            if (e1-> == vertex)
+                return getSuccessor(vi);
+
+        return NULL;
+    }
+
     /**
      * Test if the face contains a point (which is assumed to lie on the plane
      * of the face -- for efficiency the function does
