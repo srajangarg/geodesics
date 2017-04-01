@@ -157,7 +157,6 @@ public:
         return faces.size() <= 1;
     }
 
-private:
     friend class Mesh;
 
     /** Set an endpoint of the edge. */
@@ -211,6 +210,12 @@ private:
     bool isSelfLoop() const
     {
         return endpoints[0] == endpoints[1];
+    }
+
+    double length()
+    {
+        //FILL
+        return 0.0;
     }
 
     Vertex *endpoints[2];

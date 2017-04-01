@@ -16,13 +16,32 @@ public:
     PointType ptype;
 
     // FILL
-    // construct from vertex*, edge* + double(0 to 1), face*, xyz
+    // construct from 1. vertex*, 2. edge* + double(0 to 1) + vertex?, 
+    // 3. face*, 4. xyz coordinates
     // set p and ptype accordingly
 
     vector<Edge *> get_visible_edges()
     {
         // FILL
-        return {};
+        assert(ptype != UNDEFINED);
+
+        vector<Edge*> visible;
+        
+        switch(ptype)
+        {
+            case VERTEX:
+
+                break;
+
+            case EDGE:
+
+                break;
+
+            case FACE:
+
+                break;
+        }
+        return visible;
     }
 };
 
