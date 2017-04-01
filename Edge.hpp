@@ -214,8 +214,8 @@ public:
 
     double length()
     {
-        //FILL
-        return 0.0;
+        //FILL - DONE
+        return (endpoints[0]->getPosition()).distance(endpoints[1]->getPosition());
     }
 
     Vertex *endpoints[2];

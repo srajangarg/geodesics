@@ -234,6 +234,18 @@ private:
     {
         // FILL
         // set bool saddle_or_boundary accordingly
+        if(isBoundary())
+            saddle_or_boundary = true;
+        else
+        {
+            double angle = 0.0;
+            //compute total angle here, if > 2*PI, then return saddle point
+            for (auto fi = faces.begin(); fi != faces.end(); ++fi)
+            {
+                double theta = fi->getAngle(position);
+
+            }
+        }
     }
 
     Vector3 position;
