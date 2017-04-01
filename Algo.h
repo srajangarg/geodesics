@@ -121,45 +121,43 @@ public:
         }
     }
 
-    vector<Interval> source_bisect(double st, double end, Vector2 ps1, Vector2 ps2)
+    vector<Interval> source_bisect(double st, double end, const Interval &i1, const Interval& i2)
     {
-        // FILL - DONE
         // takes in  a segment st-end and returns 1or2 interval
         // with the closest source indicated on each interval
-        // Vector2 st_v(st, 0);
-        // Vector2 end_v(end, 0);
 
-        // vector<Interval> bisected_intervals;
+        auto ps1 = i1.pos, ps2 = i2.pos;
+        Vector2 st_v(st, 0), end_v(end, 0);
 
-        // double x = (ps2.squaredLength() - ps1.squaredLength())/(2.0*(ps2.x() - ps1.x()));
-        // //(x, 0) is equidistant from ps1 and ps2
-        // if(x > st and x < end)
-        // {
-        // 	//push two intervals
-        // 	//check if [st, x] has source ps1 or ps2
-        // 	if(ps2.distance(st_v) < ps2.distance(end_v))
-        // 		swap(ps1, ps2);
+        vector<Interval> b_intervals;
+        // FIX  double x = (ps2.squaredLength() - ps1.squaredLength())/(2.0*(ps2.x() - ps1.x()));
+        double x = 0.0;
+        // (x, 0) is equidistant from ps1 and ps2
 
-        // 	// (Vector2 pos_, double st_, double end_, double ps_d_, Face* from_,
-        //      // Edge *edge_)
-        // 	//can pass min_d as 0.0 since it is recomputed in constructor
-        // 	Interval bisec_interval_1(ps1, st, x, 0.0, face, edge);
-        // 	Interval bisec_interval_2(ps2, x, end, 0.0, face, edge);
+        if(x >= st and x <= end)
+        {   
+            // [st, x] closer to ps1 or ps2?
+            if ((st_v-ps1).squaredLength() < (st_v-ps2).squaredLength())
+            {
+                b_intervals.push_back(Interval(ps1, st, x, i1.ps_d, i1.from, i1.edge));
+                b_intervals.push_back(Interval(ps2, x, end, i2.ps_d, i2.from, i2.edge));
+            }
+            else
+            {
+                b_intervals.push_back(Interval(ps2, st, x, i2.ps_d, i2.from, i2.edge));
+                b_intervals.push_back(Interval(ps1, x, end, i1.ps_d, i1.from, i1.edge));
+            }
+        }
+        else
+        {
+        	//the complete interval is near to one single source
+        	if((ps2-st_v).squaredLength() < (ps1-st_v).squaredLength())
+                b_intervals.push_back(Interval(ps2, st, end, i2.ps_d, i2.from, i2.edge));
+            else
+                b_intervals.push_back(Interval(ps1, st, end, i1.ps_d, i1.from, i1.edge));
+        }
 
-        // 	bisected_intervals.push_back(bisec_interval_1);
-        // 	bisected_intervals.push_back(bisec_interval_2);
-        // }
-        // else
-        // {
-        // 	//the complete interval is near to one single source
-        // 	if(ps2.distance(start) < ps1.distance(start))
-        // 		swap(ps1, ps2);
-
-        // 	Interval bisec_interval_1(ps1, st, end, 0.0, face, edge);
-        // 	bisected_intervals.push_back(bisec_interval_1);
-        // }
-
-        // return bisected_intervals;
+        return b_intervals;
     }
 
     vector<Interval> sanitize_and_merge(vector<Interval>& intervals)
@@ -208,7 +206,7 @@ public:
                 Interval w_short(*w); w_short.end = new_w.st;
 
                 new_intervals.push_back(w_short);
-                for (auto &interval : source_bisect(new_w.st, w->end, w->pos, new_w.pos))
+                for (auto &interval : source_bisect(new_w.st, w->end, *w, new_w))
                     new_intervals.push_back(interval);
 
                 new_w.st = w->end;
@@ -220,7 +218,7 @@ public:
 
                 Interval new_w_short(new_w); new_w_short.end = w->st;
                 new_intervals.push_back(new_w_short);
-                for (auto &interval : source_bisect(w->st, new_w.end, new_w.pos, w->pos))
+                for (auto &interval : source_bisect(w->st, new_w.end, new_w, *w))
                     new_intervals.push_back(interval);
                 Interval w_short(*w); w_short.st = new_w.end;
                 new_intervals.push_back(w_short);
@@ -234,7 +232,7 @@ public:
 
                 Interval new_w_short(new_w); new_w_short.end = w->st;
                 new_intervals.push_back(new_w_short);
-                for (auto &interval : source_bisect(w->st, w->end, new_w.pos, w->pos))
+                for (auto &interval : source_bisect(w->st, w->end, new_w, *w))
                     new_intervals.push_back(interval);
                 new_w.st = w->end;
             }
@@ -245,7 +243,7 @@ public:
 
                 Interval w_short1(*w); w_short1.end = new_w.st;
                 new_intervals.push_back(w_short1);
-                for (auto &interval : source_bisect(new_w.st, new_w.end, new_w.pos, w->pos))
+                for (auto &interval : source_bisect(new_w.st, new_w.end, new_w, *w))
                     new_intervals.push_back(interval);
                 Interval w_short2(*w); w_short2.st = new_w.end;
                 new_intervals.push_back(w_short2);
