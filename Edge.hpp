@@ -212,11 +212,7 @@ public:
         return endpoints[0] == endpoints[1];
     }
 
-    double length()
-    {
-        //FILL - DONE
-        return (endpoints[0]->getPosition()).distance(endpoints[1]->getPosition());
-    }
+    double length() const;
 
     Vertex *endpoints[2];
     std::list<Face *> faces;

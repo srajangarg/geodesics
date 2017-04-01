@@ -22,3 +22,8 @@ Edge *Edge::nextAroundEndpoint(int i)
 
     return NULL;
 }
+
+double Edge::length() const
+{
+    return (endpoints[0]->getPosition() - endpoints[1]->getPosition()).length();
+}

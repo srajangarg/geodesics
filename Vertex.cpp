@@ -67,3 +67,20 @@ void Vertex::updateNormal()
 
     has_precomputed_normal = false;
 }
+
+void Vertex::update_saddle_or_boundary()
+{
+    saddle_or_boundary = false;
+    if(isBoundary())
+    {
+        saddle_or_boundary = true;
+    }
+    else
+    {
+        double angle = 0.0;
+        for (auto fi = faces.begin(); fi != faces.end(); ++fi)
+            angle += (*fi)->getAngle(this);
+        if (angle > 2 * M_PI)
+            saddle_or_boundary = true;
+    }
+}

@@ -405,15 +405,6 @@ class /* DGP_DLL_LOCAL */ VectorNBase
       return result;
     }
 
-    T distance(VectorT const & other) const
-    {
-      T dist = 0.0;
-      for (long i = 0; i < N; ++i)
-        dist += (values[i] - other[i])*(values[i] - other[i]);
-
-      return sqrt(dist); 
-    } 
-
     /** Get the square of the L2 length of the vector. */
     T squaredLength() const { return this->dot(*static_cast<VectorT const *>(this)); }
 
