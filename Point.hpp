@@ -72,8 +72,8 @@ public:
                 break;
 
             case FACE:
-                for (auto it = ((Face *)p)->edges.begin();
-                     it != ((Face *)p)->edges.end(); ++it)
+                for (auto it = ((Face *)p)->edges.begin(); it != ((Face *)p)->edges.end();
+                     ++it)
                     visible.push_back(*it);
         }
         return visible;

@@ -89,7 +89,5 @@ double Face::getAngle(Vertex *v)
     auto e1 = v1->getPosition() - v->getPosition();
     auto e2 = v2->getPosition() - v->getPosition();
 
-    double angle = acos(abs((e1).dot(e2))
-                        / sqrt((e1).squaredLength() * (e2).squaredLength()));
-    return angle;
+    return acos(abs((e1).dot(e2)) / sqrt((e1).squaredLength() * (e2).squaredLength()));
 }

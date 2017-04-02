@@ -107,15 +107,10 @@ public:
             if (prop_w.from == face)
                 continue;
 
-            Edge *e1 = face->getSuccessor(prop_e), *e2 = face->getSuccessor(e1);
+            auto candidates = get_new_intervals(prop_w, face);
 
-            auto candids_1 = get_new_intervals(prop_w, e1);
-            auto candids_2 = get_new_intervals(prop_w, e2);
-
-            for (auto &new_w : candids_1)
-                insert_new_interval(e1, new_w);
-            for (auto &new_w : candids_2)
-                insert_new_interval(e2, new_w);
+            for (auto &new_w : candidates)
+                insert_new_interval(new_w);
         }
     }
 
@@ -162,13 +157,13 @@ public:
         return {};
     }
 
-    void insert_new_interval(Edge *e, Interval &new_w)
+    void insert_new_interval(Interval &new_w)
     {
         // FILL
         // updates edge_intervals[e] and intervals according to algo discussed
         // should be O(edge_intervals[e])
 
-        auto &intervals = edge_intervals[e];
+        auto &intervals = edge_intervals[new_w.edge];
         vector<Interval> new_intervals;
         bool new_pushed = false;
 
@@ -266,7 +261,7 @@ public:
         }
     }
 
-    vector<Interval> get_new_intervals(const Interval &w, Edge *e)
+    vector<Interval> get_new_intervals(const Interval &w, Face *face)
     {
         // FILL
         // given an interval, propogate it to an edge e, v is the vertex opposite to e
@@ -300,7 +295,7 @@ public:
 
                 for (auto &e : ((Vertex *)(source->p))->edges) {
                     Interval ii(0, 0, 0, e->length(), 0, NULL, e);
-                    insert_new_interval(e, ii);
+                    insert_new_interval(ii);
                 }
                 break;
 
