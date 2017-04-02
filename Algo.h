@@ -2,6 +2,7 @@
 #include "Point.hpp"
 #include "DGP/Vector2.hpp"
 #include <unordered_map>
+#define epsilon 1e-15
 using namespace std;
 
 class Interval
@@ -15,23 +16,50 @@ public:
     Face *from;
 
     Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
-             Edge *edge_)
-        : st(st_), end(end_), ps_d(ps_d_)
+             Edge *edge_, bool invert)
+        : ps_d(ps_d_)
     {
-        pos = Vector2(x_, y_);
         edge = edge_;
         from = from_;
+        
+        //check if we need to invert the interval
+        //INVARIANT - st is always close to endpoints[0] than end
+
+        if(invert)
+        {
+            st = edge->length() - end_;
+            end = edge->length() - st_;
+            pos = Vector2(edge->length() - x_, y_);
+        }
+        else
+        {
+            st = st_;
+            end = end_;
+            pos = Vector2(x_, y_);
+        }
 
         assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
         recompute_min_d();
     }
 
     Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *from_,
-             Edge *edge_)
-        : pos(pos_), st(st_), end(end_), ps_d(ps_d_)
+             Edge *edge_, bool invert)
+        : pos(pos_), ps_d(ps_d_)
     {
         edge = edge_;
         from = from_;
+
+        if(invert)
+        {
+            st = edge->length() - end_;
+            end = edge->length() - st_;
+            pos = Vector2(edge->length() - pos_.x(), pos_.y());
+        }
+        else
+        {
+            st = st_;
+            end = end_;
+        }
 
         assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
         recompute_min_d();
@@ -48,6 +76,8 @@ public:
             min_d = (pos - st_v).length();
         else
             min_d = (pos - end_v).length();
+        
+        min_d += ps_d;
     }
 
     double compute_max_d()
@@ -56,9 +86,9 @@ public:
         Vector2 end_v(end, 0);
 
         if (pos.x() >= (st + end) / 2.0)
-            return (pos - st_v).length();
+            return (pos - st_v).length() + ps_d;
         else
-            return (pos - end_v).length();
+            return (pos - end_v).length() + ps_d;
     }
 
     bool operator<(const Interval &rhs) const
@@ -129,32 +159,93 @@ public:
         // ps1.x()));
         double x = 0.0;
         // (x, 0) is equidistant from ps1 and ps2
+        //calculated x directly from research paper
+        double alpha = ps2.x() - ps1.x();
+        double beta = i2.ps_d - i1.ps_d;
+        double gamma = ps1.squaredLength() - ps2.squaredLength() - beta*beta;
+        //ax^2 + bx + c = 0
+        double a = alpha*alpha - beta*beta;
+        //γα + 2s1xβ2
+        double b = gamma*alpha + 2.0*ps2.x()*beta*beta;
+        //c = 1/4γ2 − s12β2
+        double c = 0.25*gamma*gamma - ps2.squaredLength()*beta*beta;
+
+        if(b*b - 4*a*c > 0)
+        {
+            double sq_det = sqrt(b*b - 4*a*c); 
+            x = (-b + sq_det)/(2*a);
+        }
+        else
+            x = -1.0;
 
         if (x >= st and x <= end) {
             // [st, x] closer to ps1 or ps2?
             if ((st_v - ps1).squaredLength() < (st_v - ps2).squaredLength()) {
-                b_intervals.push_back(Interval(ps1, st, x, i1.ps_d, i1.from, i1.edge));
-                b_intervals.push_back(Interval(ps2, x, end, i2.ps_d, i2.from, i2.edge));
+                b_intervals.push_back(Interval(ps1, st, x, i1.ps_d, i1.from, i1.edge, false));
+                b_intervals.push_back(Interval(ps2, x, end, i2.ps_d, i2.from, i2.edge, false));
             } else {
-                b_intervals.push_back(Interval(ps2, st, x, i2.ps_d, i2.from, i2.edge));
-                b_intervals.push_back(Interval(ps1, x, end, i1.ps_d, i1.from, i1.edge));
+                b_intervals.push_back(Interval(ps2, st, x, i2.ps_d, i2.from, i2.edge, false));
+                b_intervals.push_back(Interval(ps1, x, end, i1.ps_d, i1.from, i1.edge, false));
             }
         } else {
             // the complete interval is near to one single source
             if ((ps2 - st_v).squaredLength() < (ps1 - st_v).squaredLength())
-                b_intervals.push_back(Interval(ps2, st, end, i2.ps_d, i2.from, i2.edge));
+                b_intervals.push_back(Interval(ps2, st, end, i2.ps_d, i2.from, i2.edge, false));
             else
-                b_intervals.push_back(Interval(ps1, st, end, i1.ps_d, i1.from, i1.edge));
+                b_intervals.push_back(Interval(ps1, st, end, i1.ps_d, i1.from, i1.edge, false));
         }
 
         return b_intervals;
+    }
+
+    int get_next_sane_interval(vector<Interval> &intervals, vector<Interval>::iterator it)
+    {
+        it++;
+        while(it != intervals.end())
+        {
+            auto w = *it;
+            //check if w is too small
+            //w - intervals.begin() gives the index of the current interval
+            if(w.end - w.st > epsilon)
+                return w - intervals.begin();
+            it++;
+        }
+        return -1;
     }
 
     vector<Interval> sanitize_and_merge(vector<Interval> &intervals)
     {
         // FILL
         // remove too small intervals, merge intervals with same pos and ps_d etc.
-        return {};
+        vector<Interval> sanitized_intervals;
+        for (auto it = intervals.begin(); it != intervals.end(); it++)
+        {
+            auto w = *it;
+            //check if w is too small
+            if(w.end - w.st > epsilon)
+                sanitized_intervals.push_back(w);
+            else
+            {
+                int next_sane_interval_index = get_next_sane_interval(intervals, it);
+                if(next_sane_interval_index > 0)
+                {
+                    auto last_sane_interval = sanitized_intervals[sanitized_intervals.size() - 1];
+                    auto next_sane_interval = intervals[next_sane_interval_index];
+                    //check if both intervals have same source and same ps_d
+                    if(last_sane_interval.pos == next_sane_interval.pos and 
+                        abs(last_sane_interval.ps_d - next_sane_interval.ps_d) < epsilon)
+                    {
+                        //merge these intervals
+                        last_sane_interval.end = next_sane_interval.end;
+                        last_sane_interval.recompute_min_d();
+                        sanitized_intervals.push_back(last_sane_interval);
+                    }
+                }
+                else
+                    break;
+            }
+        }
+        return sanitized_intervals;
     }
 
     void insert_new_interval(Interval &new_w)
@@ -294,7 +385,8 @@ public:
                 // invert wale pains???
 
                 for (auto &e : ((Vertex *)(source->p))->edges) {
-                    Interval ii(0, 0, 0, e->length(), 0, NULL, e);
+                    //check for invert
+                    Interval ii(0, 0, 0, e->length(), 0, NULL, e, false);
                     insert_new_interval(ii);
                 }
                 break;
