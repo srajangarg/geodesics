@@ -129,7 +129,8 @@ public:
         Vector2 st_v(st, 0), end_v(end, 0);
 
         vector<Interval> b_intervals;
-        // FIX  INCOORECT double x = (ps2.squaredLength() - ps1.squaredLength())/(2.0*(ps2.x() -
+        // FIX  INCOORECT double x = (ps2.squaredLength() -
+        // ps1.squaredLength())/(2.0*(ps2.x() -
         // ps1.x()));
         double x = 0.0;
         // (x, 0) is equidistant from ps1 and ps2
