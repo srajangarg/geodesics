@@ -170,15 +170,19 @@ public:
         //c = 1/4γ2 − s12β2
         double c = 0.25*gamma*gamma - ps2.squaredLength()*beta*beta;
 
+        bool equidist_pt = true;
+
         if(b*b - 4*a*c > 0)
         {
             double sq_det = sqrt(b*b - 4*a*c); 
             x = (-b + sq_det)/(2*a);
         }
         else
-            x = -1.0;
+            equidist_pt = false;
 
-        if (x >= st and x <= end) {
+        //equidist_pt is false when no such x exists, in that case one pseudo-source is closer
+
+        if (x >= st and x <= end and equidist_pt) {
             // [st, x] closer to ps1 or ps2?
             if ((st_v - ps1).squaredLength() < (st_v - ps2).squaredLength()) {
                 b_intervals.push_back(Interval(ps1, st, x, i1.ps_d, i1.from, i1.edge, false));
@@ -198,53 +202,43 @@ public:
         return b_intervals;
     }
 
-    int get_next_sane_interval(vector<Interval> &intervals, vector<Interval>::iterator it)
-    {
-        it++;
-        while(it != intervals.end())
-        {
-            auto w = *it;
-            //check if w is too small
-            //w - intervals.begin() gives the index of the current interval
-            if(w.end - w.st > epsilon)
-                return w - intervals.begin();
-            it++;
-        }
-        return -1;
-    }
-
     vector<Interval> sanitize_and_merge(vector<Interval> &intervals)
     {
         // FILL
         // remove too small intervals, merge intervals with same pos and ps_d etc.
         vector<Interval> sanitized_intervals;
-        for (auto it = intervals.begin(); it != intervals.end(); it++)
+        Interval last_merged_interval = sanitized_intervals[0];
+        auto it1 = intervals.begin();
+        auto it2 = it1;
+        //last_merged_interval is interval corresponding to [it1, it2)
+        for (it2++; it1 != intervals.end() and it2 != intervals.end();)
         {
-            auto w = *it;
+
+            auto w = *it2;
             //check if w is too small
             if(w.end - w.st > epsilon)
-                sanitized_intervals.push_back(w);
-            else
             {
-                int next_sane_interval_index = get_next_sane_interval(intervals, it);
-                if(next_sane_interval_index > 0)
+                //check if last merged interval and w have same pos and everything
+                if(last_merged_interval.pos == w.pos and 
+                    abs(last_merged_interval.ps_d - w.ps_d) < epsilon)
                 {
-                    auto last_sane_interval = sanitized_intervals[sanitized_intervals.size() - 1];
-                    auto next_sane_interval = intervals[next_sane_interval_index];
-                    //check if both intervals have same source and same ps_d
-                    if(last_sane_interval.pos == next_sane_interval.pos and 
-                        abs(last_sane_interval.ps_d - next_sane_interval.ps_d) < epsilon)
-                    {
-                        //merge these intervals
-                        last_sane_interval.end = next_sane_interval.end;
-                        last_sane_interval.recompute_min_d();
-                        sanitized_intervals.push_back(last_sane_interval);
-                    }
+                    //merge last_merge_interval and w
+                    last_merged_interval.end = w.end;
+                    last_merged_interval.recompute_min_d();
+                    it2++;
                 }
                 else
-                    break;
+                {
+                    sanitized_intervals.push_back(last_merged_interval);
+                    it1 = it2;
+                    it2++;
+                    last_merged_interval = *it1;
+                }
             }
+            else
+                it2++;
         }
+        sanitized_intervals.push_back(last_merged_interval);
         return sanitized_intervals;
     }
 
@@ -386,7 +380,14 @@ public:
 
                 for (auto &e : ((Vertex *)(source->p))->edges) {
                     //check for invert
-                    Interval ii(0, 0, 0, e->length(), 0, NULL, e, false);
+                    //Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
+                    // Edge *edge_, bool invert)
+                    ////on which side of e does p lie?
+                    bool invert = false;
+                    if((e->getEndpoint(0) == source->p and e->getEndpoint(1) < e->getEndpoint(0)) or
+                        (e->getEndpoint(1) == source->p and e->getEndpoint(0) < e->getEndpoint(1)))
+                        invert = true;
+                    Interval ii(0, 0, 0, e->length(), 0, NULL, e, invert);
                     insert_new_interval(ii);
                 }
                 break;
