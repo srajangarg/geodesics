@@ -393,9 +393,34 @@ public:
                 break;
 
             case Point::EDGE:
+            {
+                //source->p is edge *
+                Edge * e = (Edge *)source->p;
+                bool invert = e->getEndpoint(0) > e->getEndpoint(1);
+                //x = (pos - endpoint[0]).length()
+                //endpoint[0]---------pos------------endpoint[1]
+                Interval ii((source->pos - e->getEndpoint(0)->getPosition()).length(), 0, 0, e->length(), 0, NULL, e, invert);
+                insert_new_interval(ii);
                 break;
-
+            }
             case Point::FACE:
+                for (auto &e : ((Face *)(source->p))->edges)
+                {
+                    Vector3 pos1 = e->getEndpoint(0)->getPosition();
+                    Vector3 pos2 = e->getEndpoint(1)->getPosition();
+                    //         pos(y)
+                    //       /
+                    //     /
+                    //(0)pos1--(x)-----------pos2
+                    double x = (source->pos - pos1).dot((pos2 - pos1).unit());
+                    double y = sqrt((source->pos - pos1).squaredLength() - x*x);
+                    //pythagoras theoram
+                    //Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
+                    // Edge *edge_, bool invert)
+                    bool invert = e->getEndpoint(0) > e->getEndpoint(1);
+                    Interval ii(x, y, 0, e->length(), 0, (Face *)(source->p), e, invert);
+                    insert_new_interval(ii);
+                }   
                 break;
         }
     }
