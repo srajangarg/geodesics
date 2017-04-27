@@ -99,6 +99,15 @@ public:
                 || endpoints[1] == other.endpoints[0]);
     }
 
+    Vertex *getCommonVertex(Edge const &other) const
+    {
+        if (endpoints[0] == other.endpoints[0] or endpoints[0] == other.endpoints[1])
+            return endpoints[0];
+        if (endpoints[1] == other.endpoints[0] or endpoints[1] == other.endpoints[1])
+            return endpoints[1];
+        return NULL;
+    }
+
     /**
      * Get the next edge when stepping counter-clockwise (when viewed from the
      * "outside" of the mesh) around a specified

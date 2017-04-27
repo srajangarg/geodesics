@@ -2,7 +2,7 @@
 #include "Point.hpp"
 #include "DGP/Vector2.hpp"
 #include <unordered_map>
-#define epsilon 1e-15
+#define EPS 1e-15
 using namespace std;
 
 class Interval
@@ -15,53 +15,71 @@ public:
     Edge *edge;
     Face *from;
 
-    Interval(){}
+    Interval()
+    {
+    }
+
+    void set_st_end_pos(double st_, double end_, bool invert)
+    {
+        if (invert) {
+            st = edge->length() - end_;
+            end = edge->length() - st_;
+            pos = Vector2(edge->length() - pos.x(), pos.y());
+        } else {
+            st = st_;
+            end = end_;
+            pos = Vector2(pos.x(), pos.y());
+        }
+    }
 
     Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
-             Edge *edge_, bool invert)
-        : ps_d(ps_d_)
+             Edge *edge_, bool invert = false)
     {
         edge = edge_;
         from = from_;
-        
-        //check if we need to invert the interval
-        //INVARIANT - st is always close to endpoints[0] than end
+        ps_d = ps_d_;
+        pos = Vector2(x_, y_);
+        set_st_end_pos(st_, end_, invert);
+        assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
+        // INVARIANT - st is always close to lower endpoint than higher endpoint pointer
+        recompute_min_d();
+    }
 
-        if(invert)
-        {
-            st = edge->length() - end_;
-            end = edge->length() - st_;
-            pos = Vector2(edge->length() - x_, y_);
-        }
-        else
-        {
-            st = st_;
-            end = end_;
-            pos = Vector2(x_, y_);
-        }
+    Interval(double x_, double y_, double st_, double end_, const Interval &i,
+             bool invert = false)
+    {
+        edge = i.edge;
+        from = i.from;
+        ps_d = i.ps_d;
+        pos = Vector2(x_, y_);
+        set_st_end_pos(st_, end_, invert);
+
+        assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
+        // INVARIANT - st is always close to lower endpoint than higher endpoint pointer
+        recompute_min_d();
+    }
+
+    Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *from_,
+             Edge *edge_, bool invert = false)
+    {
+        edge = edge_;
+        from = from_;
+        pos = pos_;
+        ps_d = ps_d_;
+        set_st_end_pos(st_, end_, invert);
 
         assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
         recompute_min_d();
     }
 
-    Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *from_,
-             Edge *edge_, bool invert)
-        : pos(pos_), ps_d(ps_d_)
+    Interval(Vector2 pos_, double st_, double end_, const Interval &i,
+             bool invert = false)
     {
-        edge = edge_;
-        from = from_;
-
-        if(invert)
-        {
-            st = edge->length() - end_;
-            end = edge->length() - st_;
-            pos = Vector2(edge->length() - pos_.x(), pos_.y());
-        }
-        else
-        {
-            st = st_;
-            end = end_;
-        }
+        edge = i.edge;
+        from = i.from;
+        ps_d = i.ps_d;
+        pos = pos_;
+        set_st_end_pos(st_, end_, invert);
 
         assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
         recompute_min_d();
@@ -78,7 +96,7 @@ public:
             min_d = (pos - st_v).length();
         else
             min_d = (pos - end_v).length();
-        
+
         min_d += ps_d;
     }
 
@@ -100,7 +118,30 @@ public:
         return (edge < rhs.edge);
     }
 
-    // invariants
+    struct Info {
+        double angle;
+        double x, y;
+        Vertex *common;
+    };
+
+    Info get_info_edge(Edge *e) const
+    {
+        Vertex *v = e->getCommonVertex(*edge);
+        assert(v != NULL);
+
+        Info i;
+        i.angle = from->getAngle(v);
+        i.y = pos.y();
+        i.common = v;
+
+        if (v < edge->getOtherEndpoint(v))
+            i.x = pos.x();
+        else
+            i.x = edge->length() - pos.x();
+
+        return i;
+    }
+
     // y >= 0
     // recompute_min_d() must be called if any of the 5 parameters change
 };
@@ -127,9 +168,6 @@ public:
 
     void propagate()
     {
-        // FILL
-        // removes first element of set, and propagates accordingly once
-
         Interval prop_w = *intervals_heap.begin();
         Edge *prop_e = prop_w.edge;
 
@@ -146,37 +184,34 @@ public:
         }
     }
 
-    Interval best_first_interval(Point destination, vector<Point> & path)
+    Interval best_first_interval(Point destination, vector<Point> &path)
     {
-        if(destination.ptype == Point::EDGE)
-        {
-            Edge * e = (Edge *)destination.p;
+        if (destination.ptype == Point::EDGE) {
+            Edge *e = (Edge *)destination.p;
             auto &intervals = edge_intervals[e];
-            double ratio = (destination.pos - e->getEndpoint(0)->getPosition()).length()/e->length();
+            double ratio = (destination.pos - e->getEndpoint(0)->getPosition()).length()
+                           / e->length();
 
-            for (auto interval : intervals)
-            {
-                if((interval->st/e->length() > ratio) and (interval->end/e->length() < ratio))
+            for (auto interval : intervals) {
+                if ((interval->st / e->length() > ratio)
+                    and (interval->end / e->length() < ratio))
                     return *interval;
             }
-        }
-        else if(destination.ptype == Point::FACE)
-        {
-            Face * f = (Face *)destination.p;
+        } else if (destination.ptype == Point::FACE) {
+            Face *f = (Face *)destination.p;
             double distance = std::numeric_limits<double>::infinity();
             Interval min_interval;
-            Point next_point(0, 0, 0); //temporarily an undefined point
-            for (auto it = f->edges.begin(); it != f->edges.end(); ++it)
-            {
+            Point next_point(0, 0, 0); // temporarily an undefined point
+            for (auto it = f->edges.begin(); it != f->edges.end(); ++it) {
                 // pos += (*it)->getPosition();
                 auto &intervals = edge_intervals[*it];
-                //find the interval which is closest to the destination and source
-                for (auto interval : intervals)
-                {
+                // find the interval which is closest to the destination and source
+                for (auto interval : intervals) {
                     if (interval->from == f)
                         continue;
 
-                    //consider only such intervals through which the path can pass through
+                    // consider only such intervals through which the path can pass
+                    // through
                     Vector3 pos = destination.pos;
                     Vector3 pos1 = (*it)->getEndpoint(0)->getPosition();
                     Vector3 pos2 = (*it)->getEndpoint(1)->getPosition();
@@ -190,36 +225,37 @@ public:
                         swap(pos1, pos2);
 
                     double dest_x = (pos - pos1).dot((pos2 - pos1).unit());
-                    double dest_y = -sqrt((destination.pos - pos1).squaredLength() - dest_x*dest_x);
-                    //pythagoras theoram
-                    //get the point where source.pos and dest.pos meet x-axis and 
-                    //then calculate the miimum distance to source through this interval
-                    double axis_x = interval->pos.x() - interval->pos.y()*
-                    ((interval->pos.x() - dest_x)/(interval->pos.y() - dest_y));
+                    double dest_y = -sqrt((destination.pos - pos1).squaredLength()
+                                          - dest_x * dest_x);
+                    // pythagoras theoram
+                    // get the point where source.pos and dest.pos meet x-axis and
+                    // then calculate the miimum distance to source through this interval
+                    double axis_x
+                        = interval->pos.x()
+                          - interval->pos.y() * ((interval->pos.x() - dest_x)
+                                                 / (interval->pos.y() - dest_y));
 
                     double source_dist = interval->ps_d;
                     double ratio;
-                    //minimum distance from dest to source through this interval
-                    if (axis_x > interval->st and axis_x < interval->end)
-                    {
+                    // minimum distance from dest to source through this interval
+                    if (axis_x > interval->st and axis_x < interval->end) {
                         source_dist += (Vector2(dest_x, dest_y) - interval->pos).length();
-                        ratio = axis_x/(*it)->length();
-                    }
-                    else if (axis_x < interval->st)
-                    {
-                        source_dist += ((Vector2(dest_x, dest_y) - Vector2(interval->st, 0.0)).length()
-                            + (interval->pos - Vector2(interval->st, 0.0)).length());
-                        ratio = interval->st/(*it)->length();
-                    }
-                    else
-                    {
-                        source_dist += ((Vector2(dest_x, dest_y) - Vector2(interval->end, 0.0)).length()
-                            + (interval->pos - Vector2(interval->end, 0.0)).length());
-                        ratio = interval->end/(*it)->length();
+                        ratio = axis_x / (*it)->length();
+                    } else if (axis_x < interval->st) {
+                        source_dist
+                            += ((Vector2(dest_x, dest_y) - Vector2(interval->st, 0.0))
+                                    .length()
+                                + (interval->pos - Vector2(interval->st, 0.0)).length());
+                        ratio = interval->st / (*it)->length();
+                    } else {
+                        source_dist
+                            += ((Vector2(dest_x, dest_y) - Vector2(interval->end, 0.0))
+                                    .length()
+                                + (interval->pos - Vector2(interval->end, 0.0)).length());
+                        ratio = interval->end / (*it)->length();
                     }
 
-                    if(source_dist < distance)
-                    {
+                    if (source_dist < distance) {
                         distance = source_dist;
                         min_interval = *interval;
                         next_point = Point(*it, ratio);
@@ -229,24 +265,18 @@ public:
 
             path.push_back(next_point);
             return min_interval;
-        }
-        else if(destination.ptype == Point::VERTEX)
-        {
-            Vertex * v = (Vertex *)destination.p;
+        } else if (destination.ptype == Point::VERTEX) {
+            Vertex *v = (Vertex *)destination.p;
             double distance = std::numeric_limits<double>::infinity();
-            Interval min_interval; 
-            for (auto it = v->edges.begin(); it != v->edges.end(); ++it)
-            {
+            Interval min_interval;
+            for (auto it = v->edges.begin(); it != v->edges.end(); ++it) {
                 Interval interval;
                 double source_dist = interval.ps_d;
-                if (v == (*it)->getEndpoint(0))
-                {
+                if (v == (*it)->getEndpoint(0)) {
                     interval = *(edge_intervals[*it].front());
                     source_dist += (interval.pos - Vector2(interval.st, 0.0)).length();
                     source_dist += interval.st;
-                }
-                else
-                {
+                } else {
                     interval = *(edge_intervals[*it].back());
                     source_dist += (interval.pos - Vector2(interval.end, 0.0)).length();
                     source_dist += ((*it)->length() - interval.end);
@@ -261,14 +291,16 @@ public:
 
     vector<Point> trace_back(Point destination)
     {
-        vector<Point> path;
-        assert(destination.ptype != Point::UNDEFINED);
+        assert(false);
+        // vector<Point> path;
+        // assert(destination.ptype != Point::UNDEFINED);
 
-        path.push_back(destination);
+        // path.push_back(destination);
 
-        Interval best_interval = best_first_interval(destination, path);
+        // Interval best_interval = best_first_interval(destination, path);
 
-        //from the given destination and best_interval, find the next intervals and point accordingly
+        // from the given destination and best_interval, find the next intervals and point
+        // accordingly
     }
 
     vector<Interval> source_bisect(double st, double end, const Interval &i1,
@@ -276,54 +308,44 @@ public:
     {
         // takes in  a segment st-end and returns 1or2 interval
         // with the closest source indicated on each interval
-
         auto ps1 = i1.pos, ps2 = i2.pos;
         Vector2 st_v(st, 0), end_v(end, 0);
-
         vector<Interval> b_intervals;
-        // FIX  INCOORECT double x = (ps2.squaredLength() -
-        // ps1.squaredLength())/(2.0*(ps2.x() -
-        // ps1.x()));
-        double x = 0.0;
-        // (x, 0) is equidistant from ps1 and ps2
-        //calculated x directly from research paper
-        double alpha = ps2.x() - ps1.x();
-        double beta = i2.ps_d - i1.ps_d;
-        double gamma = ps1.squaredLength() - ps2.squaredLength() - beta*beta;
-        //ax^2 + bx + c = 0
-        double a = alpha*alpha - beta*beta;
-        //γα + 2s1xβ2
-        double b = gamma*alpha + 2.0*ps2.x()*beta*beta;
-        //c = 1/4γ2 − s12β2
-        double c = 0.25*gamma*gamma - ps2.squaredLength()*beta*beta;
+        double x, alpha, beta, gamma;
 
+        alpha = ps2.x() - ps1.x();
+        beta = i2.ps_d - i1.ps_d;
+        gamma = ps1.squaredLength() - ps2.squaredLength() - beta * beta;
+
+        // ax^2 + bx + c = 0
+        double a = alpha * alpha - beta * beta;
+        double b = gamma * alpha + 2.0 * ps2.x() * beta * beta;
+        double c = 0.25 * gamma * gamma - ps2.squaredLength() * beta * beta;
         bool equidist_pt = true;
 
-        if(b*b - 4*a*c > 0)
-        {
-            double sq_det = sqrt(b*b - 4*a*c); 
-            x = (-b + sq_det)/(2*a);
-        }
+        if (b * b - 4 * a * c > 0)
+            x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
         else
             equidist_pt = false;
 
-        //equidist_pt is false when no such x exists, in that case one pseudo-source is closer
+        // equidist_pt is false when no such x exists, in that case one pseudo-source is
+        // closer
 
         if (x >= st and x <= end and equidist_pt) {
             // [st, x] closer to ps1 or ps2?
             if ((st_v - ps1).squaredLength() < (st_v - ps2).squaredLength()) {
-                b_intervals.push_back(Interval(ps1, st, x, i1.ps_d, i1.from, i1.edge, false));
-                b_intervals.push_back(Interval(ps2, x, end, i2.ps_d, i2.from, i2.edge, false));
+                b_intervals.push_back(Interval(ps1, st, x, i1));
+                b_intervals.push_back(Interval(ps2, x, end, i2));
             } else {
-                b_intervals.push_back(Interval(ps2, st, x, i2.ps_d, i2.from, i2.edge, false));
-                b_intervals.push_back(Interval(ps1, x, end, i1.ps_d, i1.from, i1.edge, false));
+                b_intervals.push_back(Interval(ps2, st, x, i2));
+                b_intervals.push_back(Interval(ps1, x, end, i1));
             }
         } else {
             // the complete interval is near to one single source
             if ((ps2 - st_v).squaredLength() < (ps1 - st_v).squaredLength())
-                b_intervals.push_back(Interval(ps2, st, end, i2.ps_d, i2.from, i2.edge, false));
+                b_intervals.push_back(Interval(ps2, st, end, i2));
             else
-                b_intervals.push_back(Interval(ps1, st, end, i1.ps_d, i1.from, i1.edge, false));
+                b_intervals.push_back(Interval(ps1, st, end, i1));
         }
 
         return b_intervals;
@@ -331,38 +353,31 @@ public:
 
     vector<Interval> sanitize_and_merge(vector<Interval> &intervals)
     {
-        // FILL
         // remove too small intervals, merge intervals with same pos and ps_d etc.
         vector<Interval> sanitized_intervals;
         Interval last_merged_interval = sanitized_intervals[0];
         auto it1 = intervals.begin();
         auto it2 = it1;
-        //last_merged_interval is interval corresponding to [it1, it2)
-        for (it2++; it1 != intervals.end() and it2 != intervals.end();)
-        {
+        // last_merged_interval is interval corresponding to [it1, it2)
+        for (it2++; it1 != intervals.end() and it2 != intervals.end();) {
 
             auto w = *it2;
-            //check if w is too small
-            if(w.end - w.st > epsilon)
-            {
-                //check if last merged interval and w have same pos and everything
-                if(last_merged_interval.pos == w.pos and 
-                    abs(last_merged_interval.ps_d - w.ps_d) < epsilon)
-                {
-                    //merge last_merge_interval and w
+            // check if w is too small
+            if (w.end - w.st > EPS) {
+                // check if last merged interval and w have same pos and everything
+                if (last_merged_interval.pos == w.pos
+                    and abs(last_merged_interval.ps_d - w.ps_d) < EPS) {
+                    // merge last_merge_interval and w
                     last_merged_interval.end = w.end;
                     last_merged_interval.recompute_min_d();
                     it2++;
-                }
-                else
-                {
+                } else {
                     sanitized_intervals.push_back(last_merged_interval);
                     it1 = it2;
                     it2++;
                     last_merged_interval = *it1;
                 }
-            }
-            else
+            } else
                 it2++;
         }
         sanitized_intervals.push_back(last_merged_interval);
@@ -473,108 +488,88 @@ public:
         }
     }
 
-    vector<Interval> get_intervals_source(Vector2 src, const Interval &w, Face * face, double ps_d)
+    vector<Interval> get_intervals_source(Vector2 src, const Interval &w, Face *face,
+                                          double ps_d)
     {
-        //face is the face on which the intervals propogate
-        //check whether src lies on the interval
+        // face is the face on which the intervals propogate
+        // check whether src lies on the interval
         vector<Interval> intervals_source;
 
-        if(abs(src.y()) < epsilon && (src.x() >= (w.st - epsilon)) && (src.x() <= (w.end + epsilon)))
-        {
-            //take two intervals on the other two edges of the face
-            for (auto &edge : face->edges)
-            {
+        if (src.y() < EPS and src.x() >= w.st and src.x() <= w.end) {
+            // take two intervals on the other two edges of the face
+            for (auto &edge : face->edges) {
                 if (edge == w.edge)
                     continue;
 
-                //propogate the source to these edges
-                Vertex * v0 = edge->getEndpoint(0) < edge->getEndpoint(1) ? edge->getEndpoint(0) : edge->getEndpoint(1);
-                Vertex * v1 = edge->getOtherEndpoint(v0);
-                //v0------------v1 <- edge
-                //v0----x------v1
-                // \<theta>
-                //  \
-                //   edge
-                //line passes through origin
-                double x = src.x();
-                double theta;
-
-                if (edge->hasEndpoint(v0))
-                    theta = face->getAngle(v0);
-                else if (edge->hasEndpoint(v1))
-                    theta = face->getAngle(v1);
-               
-                //Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
-                // Edge *edge_, bool invert)
-                bool invert = edge->getEndpoint(0) > edge->getEndpoint(1);
-                Interval ii(x*cos(theta), x*sin(theta), 0, edge->length(), ps_d, face, edge, invert);
+                auto info = w.get_info_edge(edge);
+                bool invert = info.common > edge->getOtherEndpoint(info.common);
+                Interval ii(info.x * cos(info.angle), info.x * sin(info.angle), 0,
+                            edge->length(), ps_d, face, edge, invert);
                 intervals_source.push_back(ii);
             }
-        }
-        else
-        {
-            //draw lines and solve this
-            for (auto &edge : face->edges)
-            {
+        } else {
+            // draw lines and solve this
+            for (auto &edge : face->edges) {
                 if (edge == w.edge)
                     continue;
 
-                Vertex * v0 = edge->getEndpoint(0) < edge->getEndpoint(1) ? edge->getEndpoint(0) : edge->getEndpoint(1);
-                Vertex * v1 = edge->getOtherEndpoint(v0);
+                Vertex *v0 = edge->getEndpoint(0) < edge->getEndpoint(1)
+                                 ? edge->getEndpoint(0)
+                                 : edge->getEndpoint(1);
+                Vertex *v1 = edge->getOtherEndpoint(v0);
 
                 double theta1, theta2, r, src_x, src_y;
                 //   src
                 //  /
                 // / <theta2>
-                //v0----------v1
+                // v0----------v1
                 // \<theta1>
                 //  \
                 //   edge
 
-                if (edge->hasEndpoint(v0))
-                {
+                if (edge->hasEndpoint(v0)) {
                     theta1 = face->getAngle(v0);
-                    theta2 = atan(src.y()/src.x());
-                    r = sqrt(src.x()*src.x() + src.y()*src.y());
+                    theta2 = atan(src.y() / src.x());
+                    r = sqrt(src.x() * src.x() + src.y() * src.y());
                     src_x = src.x();
-                }
-                else if (edge->hasEndpoint(v1))
-                {
+                } else if (edge->hasEndpoint(v1)) {
                     theta1 = face->getAngle(v1);
-                    theta2 = atan(src.y()/(edge->length() - src.x()));
-                    r = sqrt((edge->length() - src.x())*(edge->length() - src.x()) + src.y()*src.y());
+                    theta2 = atan(src.y() / (edge->length() - src.x()));
+                    r = sqrt((edge->length() - src.x()) * (edge->length() - src.x())
+                             + src.y() * src.y());
                     src_x = edge->length() - src.x();
                 }
                 src_y = src.y();
 
-
                 double theta = theta1 + theta2;
 
-                double e1 = (w.st*src_y)/(sin(theta1)*(src_x - w.st) + cos(theta1)*src_y);
-                double e2 = (w.end*src_y)/(sin(theta1)*(src_x - w.end) + cos(theta1)*src_y);
+                double e1 = (w.st * src_y)
+                            / (sin(theta1) * (src_x - w.st) + cos(theta1) * src_y);
+                double e2 = (w.end * src_y)
+                            / (sin(theta1) * (src_x - w.end) + cos(theta1) * src_y);
 
                 if (edge->hasEndpoint(v1))
                     swap(e1, e2);
 
-                //Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
+                // Interval(double x_, double y_, double st_, double end_, double ps_d_,
+                // Face *from_,
                 // Edge *edge_, bool invert)
                 bool invert = edge->getEndpoint(0) > edge->getEndpoint(1);
 
-                if (e1 >= 0 and e2 < 0 and e1 <= edge->length())
-                {                   
+                if (e1 >= 0 and e2 < 0 and e1 <= edge->length()) {
                     e2 = edge->length();
-                    Interval ii(r*cos(theta), r*sin(theta), e1, e2, ps_d, face, edge, invert);
+                    Interval ii(r * cos(theta), r * sin(theta), e1, e2, ps_d, face, edge,
+                                invert);
                     intervals_source.push_back(ii);
-                }
-                else if (e1 >= 0 and e2 >= 0 and e1 <= edge->length())
-                {
-                    if(e2 > edge->length())
+                } else if (e1 >= 0 and e2 >= 0 and e1 <= edge->length()) {
+                    if (e2 > edge->length())
                         e2 = edge->length();
 
-                    Interval ii(r*cos(theta), r*sin(theta), e1, e2, ps_d, face, edge, invert);
+                    Interval ii(r * cos(theta), r * sin(theta), e1, e2, ps_d, face, edge,
+                                invert);
                     intervals_source.push_back(ii);
-                }  
-                //otherwise doesn't intersect this edge
+                }
+                // otherwise doesn't intersect this edge
             }
         }
 
@@ -583,51 +578,48 @@ public:
 
     vector<Interval> get_new_intervals(const Interval &w, Face *face)
     {
-        // FILL
-        // given an interval, propogate it to an edge e, v is the vertex opposite to e
-        // guaranteed that e is adjacent to the edge on which w lies
-        // return vector of candidate intervals
-        //propogate to the face opposite to face
-        //insert intervals done in propogate, just calculate the intervals here
-
-
-        // vector<Interval> get_intervals_source(Vector2 src, const Interval &w, Face * face, double ps_d)
+        // propogate to the face opposite to face
+        // insert intervals done in propogate, just calculate the intervals here
+        // vector<Interval> get_intervals_source(Vector2 src, const Interval &w, Face *
+        // face, double ps_d)
 
         Edge *prop_e = w.edge;
 
         vector<Interval> new_intervals;
 
-        for (auto &e_face : prop_e->faces)
-        {
+        for (auto &e_face : prop_e->faces) {
             if (e_face != face)
                 continue;
 
-            //propogate only on opposite side of source
-            //check if any end of the interval is endpoint
-            Vertex * v0 = prop_e->getEndpoint(0) < prop_e->getEndpoint(1) ? prop_e->getEndpoint(0) : prop_e->getEndpoint(1);
-            Vertex * v1 = prop_e->getOtherEndpoint(v0);
-            if (w.st < epsilon and v0->saddle_or_boundary)
-            {
-                //treat this as a new source
-                //pass this to a function
-                for (auto ii : get_intervals_source(Vector2(0.0, 0.0), w, e_face, w.ps_d + sqrt(w.pos.x()*w.pos.x() + w.pos.y()*w.pos.y())))
+            // propogate only on opposite side of source
+            // check if any end of the interval is endpoint
+            Vertex *v0 = prop_e->getEndpoint(0) < prop_e->getEndpoint(1)
+                             ? prop_e->getEndpoint(0)
+                             : prop_e->getEndpoint(1);
+            Vertex *v1 = prop_e->getOtherEndpoint(v0);
+            if (w.st < EPS and v0->saddle_or_boundary) {
+                // treat this as a new source
+                // pass this to a function
+                for (auto ii : get_intervals_source(
+                         Vector2(0.0, 0.0), w, e_face,
+                         w.ps_d + sqrt(w.pos.x() * w.pos.x() + w.pos.y() * w.pos.y())))
                     new_intervals.push_back(ii);
             }
-            if(abs(w.end - prop_e->length()) < epsilon and v1->saddle_or_boundary)
-            {
-                //treat this as a new source
-                //pass this to a function
-                double r = sqrt((prop_e->length() - w.pos.x())*(prop_e->length() - w.pos.x()) + w.pos.y()*w.pos.y());
-                for (auto ii : get_intervals_source(Vector2(prop_e->length(), 0.0), w, e_face, w.ps_d + r))
+            if (abs(w.end - prop_e->length()) < EPS and v1->saddle_or_boundary) {
+                // treat this as a new source
+                // pass this to a function
+                double r
+                    = sqrt((prop_e->length() - w.pos.x()) * (prop_e->length() - w.pos.x())
+                           + w.pos.y() * w.pos.y());
+                for (auto ii : get_intervals_source(Vector2(prop_e->length(), 0.0), w,
+                                                    e_face, w.ps_d + r))
                     new_intervals.push_back(ii);
-
             }
 
-            //generate normal intervals
-            //pass this to a function
+            // generate normal intervals
+            // pass this to a function
             for (auto ii : get_intervals_source(w.pos, w, e_face, w.ps_d))
                 new_intervals.push_back(ii);
-
         }
         return new_intervals;
     }
@@ -653,33 +645,35 @@ public:
                 // invert wale pains???
 
                 for (auto &e : ((Vertex *)(source->p))->edges) {
-                    //check for invert
-                    //Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
+                    // check for invert
+                    // Interval(double x_, double y_, double st_, double end_, double
+                    // ps_d_, Face *from_,
                     // Edge *edge_, bool invert)
                     ////on which side of e does p lie?
                     bool invert = false;
-                    if((e->getEndpoint(0) == source->p and e->getEndpoint(1) < e->getEndpoint(0)) or
-                        (e->getEndpoint(1) == source->p and e->getEndpoint(0) < e->getEndpoint(1)))
+                    if ((e->getEndpoint(0) == source->p
+                         and e->getEndpoint(1) < e->getEndpoint(0))
+                        or (e->getEndpoint(1) == source->p
+                            and e->getEndpoint(0) < e->getEndpoint(1)))
                         invert = true;
                     Interval ii(0, 0, 0, e->length(), 0, NULL, e, invert);
                     insert_new_interval(ii);
                 }
                 break;
 
-            case Point::EDGE:
-            {
-                //source->p is edge *
-                Edge * e = (Edge *)source->p;
+            case Point::EDGE: {
+                // source->p is edge *
+                Edge *e = (Edge *)source->p;
                 bool invert = e->getEndpoint(0) > e->getEndpoint(1);
-                //x = (pos - endpoint[0]).length()
-                //endpoint[0]---------pos------------endpoint[1]
-                Interval ii((source->pos - e->getEndpoint(0)->getPosition()).length(), 0, 0, e->length(), 0, NULL, e, invert);
+                // x = (pos - endpoint[0]).length()
+                // endpoint[0]---------pos------------endpoint[1]
+                Interval ii((source->pos - e->getEndpoint(0)->getPosition()).length(), 0,
+                            0, e->length(), 0, NULL, e, invert);
                 insert_new_interval(ii);
                 break;
             }
             case Point::FACE:
-                for (auto &e : ((Face *)(source->p))->edges)
-                {
+                for (auto &e : ((Face *)(source->p))->edges) {
                     Vector3 pos1 = e->getEndpoint(0)->getPosition();
                     Vector3 pos2 = e->getEndpoint(1)->getPosition();
                     //         pos(y)
@@ -687,14 +681,15 @@ public:
                     //     /
                     //(0)pos1--(x)-----------pos2
                     double x = (source->pos - pos1).dot((pos2 - pos1).unit());
-                    double y = sqrt((source->pos - pos1).squaredLength() - x*x);
-                    //pythagoras theoram
-                    //Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
+                    double y = sqrt((source->pos - pos1).squaredLength() - x * x);
+                    // pythagoras theoram
+                    // Interval(double x_, double y_, double st_, double end_, double
+                    // ps_d_, Face *from_,
                     // Edge *edge_, bool invert)
                     bool invert = e->getEndpoint(0) > e->getEndpoint(1);
                     Interval ii(x, y, 0, e->length(), 0, (Face *)(source->p), e, invert);
                     insert_new_interval(ii);
-                }   
+                }
                 break;
         }
     }
