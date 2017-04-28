@@ -105,16 +105,17 @@ class MMP
 {
 public:
     Mesh *mesh;
-    unordered_map<Edge *, list<Interval*>> edge_intervals;
+    unordered_map<Edge *, list<Interval *>> edge_intervals;
     Point source;
     vector<Point> destinations;
 
-    struct IntervalPtrComp
-    {
-      bool operator()(const Interval* lhs, const Interval* rhs) const  { return *lhs < *rhs; }
+    struct IntervalPtrComp {
+        bool operator()(const Interval *lhs, const Interval *rhs) const
+        {
+            return *lhs < *rhs;
+        }
     };
-    set<Interval*, IntervalPtrComp> intervals_heap;
-
+    set<Interval *, IntervalPtrComp> intervals_heap;
 
     MMP()
     {
@@ -216,7 +217,7 @@ public:
         else
             x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
 
-        if (x >= st and x <= end and equidist_pt) {
+        if (x > st and x < end and equidist_pt) {
             // [st, x] closer to ps1 or ps2?
             if ((st_v - ps1).squaredLength() < (st_v - ps2).squaredLength()) {
                 b_intervals.push_back(Interval(ps1, st, x, i1));
@@ -257,7 +258,10 @@ public:
                     last_merged_interval.recompute_min_d();
                     it2++;
                 } else {
-                    sanitized_intervals.push_back(last_merged_interval);
+
+                    if (abs(last_merged_interval.end - last_merged_interval.st) > EPS)
+                        sanitized_intervals.push_back(last_merged_interval);
+
                     it1 = it2;
                     it2++;
                     last_merged_interval = *it1;
