@@ -72,7 +72,7 @@ bool Interval::operator<(const Interval &rhs) const
     if (min_d != rhs.min_d)
         return min_d < rhs.min_d;
     else if (edge != rhs.edge)
-        return edge != rhs.edge;
+        return edge < rhs.edge;
     else
         return st < rhs.st;
 }

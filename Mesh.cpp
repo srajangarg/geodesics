@@ -137,6 +137,9 @@ bool Mesh::loadOFF(std::string const &path)
             face_vertices.end()); // ok if this fails, just skip the face with a warning
     }
 
+    for (auto& v : vertices)
+        v.update_saddle_or_boundary();
+
     setName(FilePath::objectName(path));
 
     return true;
