@@ -15,18 +15,18 @@ public:
     void *p;
     PointType ptype;
     Vector3 pos;
+    double ratio;
 
-    // FILL
-    // construct from 1. vertex*, 2. edge* + double(0 to 1) + vertex?,
-    // 3. face*, 4. xyz coordinates
-    // set p and ptype accordingly
+    Point()
+    {
+    }
 
     Point(Vertex *v)
     {
         p = v;
         pos = v->getPosition();
         ptype = VERTEX;
-    };
+    }
 
     Point(Face *f)
     {
@@ -35,24 +35,26 @@ public:
             pos += (*it)->getPosition();
         pos /= f->vertices.size();
         ptype = FACE;
-    };
+    }
 
-    Point(Edge *e, double ratio = 0.5)
+    Point(Edge *e, double rat = 0.5)
     {
-        assert(ratio <= 1 and ratio >= 0);
+        assert(rat <= 1 and rat >= 0);
+
+        ratio = rat;
         p = e;
         Vertex *v0 = e->getEndpoint(0);
         Vertex *v1 = e->getEndpoint(1);
 
-        pos = ratio * v0->getPosition() + (1 - ratio) * v1->getPosition();
+        pos = rat * v0->getPosition() + (1 - rat) * v1->getPosition();
         ptype = EDGE;
-    };
+    }
 
     Point(double x, double y, double z)
     {
         pos = Vector3(x, y, z);
         ptype = UNDEFINED;
-    };
+    }
 
     vector<Edge *> get_visible_edges()
     {

@@ -1,38 +1,26 @@
 #include "Algo.h"
 
 Interval::Interval(double x_, double y_, double st_, double end_, double ps_d_,
-                   Face *from_, Edge *edge_, bool invert)
+                   Face *from_, Edge *edge_, Interval *par, bool invert)
 {
     edge = edge_;
     from = from_;
     ps_d = ps_d_;
     pos = Vector2(x_, y_);
+    parent = par;
     set_st_end_pos(st_, end_, invert);
-    assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
-    // INVARIANT - st is always close to lower endpoint than higher endpoint pointer
-    recompute_min_d();
-}
-
-Interval::Interval(double x_, double y_, double st_, double end_, const Interval &i,
-                   bool invert)
-{
-    edge = i.edge;
-    from = i.from;
-    ps_d = i.ps_d;
-    pos = Vector2(x_, y_);
-    set_st_end_pos(st_, end_, invert);
-
     assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
     // INVARIANT - st is always close to lower endpoint than higher endpoint pointer
     recompute_min_d();
 }
 
 Interval::Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *from_,
-                   Edge *edge_, bool invert)
+                   Edge *edge_, Interval *par, bool invert)
 {
     edge = edge_;
     from = from_;
     pos = pos_;
+    parent = par;
     ps_d = ps_d_;
     set_st_end_pos(st_, end_, invert);
 
@@ -46,6 +34,7 @@ Interval::Interval(Vector2 pos_, double st_, double end_, const Interval &i, boo
     from = i.from;
     ps_d = i.ps_d;
     pos = pos_;
+    parent = const_cast<Interval *>(&i);
     set_st_end_pos(st_, end_, invert);
 
     assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
