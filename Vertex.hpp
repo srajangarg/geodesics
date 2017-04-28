@@ -12,6 +12,7 @@
 #ifndef ___Vertex_hpp__
 #define ___Vertex_hpp__
 
+using namespace std;
 #include "Common.hpp"
 #include "DGP/Colors.hpp"
 #include "DGP/Vector3.hpp"
@@ -241,6 +242,8 @@ public:
     bool saddle_or_boundary;
     float normal_normalization_factor;
 
-}; // class Vertex
+    friend ostream& operator<<(ostream& os, const Vertex& e);
+}; // class Edge
+
 
 #endif

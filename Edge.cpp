@@ -23,6 +23,13 @@ Edge *Edge::nextAroundEndpoint(int i)
     return NULL;
 }
 
+ostream& operator<<(ostream& os, const Edge& e)  
+{  
+    os << "E(" << e.getEndpoint(0)->getPosition() << " -- ";
+    os << e.getEndpoint(1)->getPosition() << ", "<<&e<<")";
+    return os;  
+} 
+
 double Edge::length() const
 {
     return (endpoints[0]->getPosition() - endpoints[1]->getPosition()).length();

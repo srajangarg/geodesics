@@ -1,5 +1,6 @@
 #ifndef __A2_Edge_hpp__
 #define __A2_Edge_hpp__
+using namespace std;
 
 #include "Common.hpp"
 #include <list>
@@ -229,6 +230,7 @@ public:
     Vertex *endpoints[2];
     std::list<Face *> faces;
 
+    friend ostream& operator<<(ostream& os, const Edge& e);
 }; // class Edge
 
 #endif

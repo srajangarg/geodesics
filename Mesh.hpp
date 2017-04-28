@@ -131,11 +131,11 @@ public:
 
     /**
      * Remove a face of the mesh. This does NOT remove any vertices or edges.
-     * Iterators to the face list remain valid unless the
+     * Iterators to the face vector remain valid unless the
      * iterator pointed to the removed face.
      *
      * This is a relatively slow operation since the face needs to be looked up
-     * in the face list
+     * in the face vector
      * (linear in number of faces). For speed, use removeFace(auto).
      *
      * @return True if the face was found and removed, else false.
@@ -151,7 +151,7 @@ public:
 
     /**
      * Remove a face of the mesh. This does NOT remove any vertices or edges.
-     * Iterators to the face list remain valid unless the
+     * Iterators to the face vector remain valid unless the
      * iterator pointed to the removed face.
      *
      * Use this version in preference to removeFace(Face const *) where

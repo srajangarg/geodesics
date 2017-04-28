@@ -89,3 +89,9 @@ void Interval::set_st_end_pos(double st_, double end_, bool invert)
         pos = Vector2(pos.x(), pos.y());
     }
 }
+
+ostream& operator<<(ostream& os, const Interval& e)
+{
+    os<<"I("<<e.st<<", "<<e.end<<", "<<e.pos<<", "<<e.ps_d<<", on "<<*e.edge<<")";
+    return os;
+}

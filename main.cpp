@@ -12,6 +12,31 @@ int usage(int argc, char *argv[])
     return -1;
 }
 
+void test(Mesh & mesh)
+{   
+    MMP mmp;
+    mmp.mesh = &mesh;
+    Point p(&(mesh.edges.front()));
+    
+    std::cout<<"src : edge "<<mesh.edges.front().getEndpoint(0)->getPosition()<<" "
+    <<mesh.edges.front().getEndpoint(1)->getPosition()<<std::endl;
+
+    mmp.source = p;
+
+    mmp.algorithm();
+
+    for (auto &pp : mmp.edge_intervals)
+    {   
+        cout<<endl;
+        cout<<*(pp.first)<<" : "<<endl;
+        for (auto& w: pp.second)
+            cout<<*w<<endl;
+    }
+    cout<<endl;
+
+    return;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -27,9 +52,10 @@ int main(int argc, char *argv[])
                 << " vertices, " << mesh.edges.size() << " edges and "
                 << mesh.faces.size() << " faces from " << in_path;
 
-    Viewer viewer;
-    viewer.setObject(&mesh);
-    viewer.launch(argc, argv);
+    test(mesh);
+    // Viewer viewer;
+    // viewer.setObject(&mesh);
+    // viewer.launch(argc, argv);
 
     return 0;
 }

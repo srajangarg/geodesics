@@ -81,3 +81,9 @@ void Vertex::update_saddle_or_boundary()
             saddle_or_boundary = true;
     }
 }
+
+ostream& operator<<(ostream& os, const Vertex& e)  
+{  
+    os << "V(" << e.getPosition() << ", "<<&e<<")";
+    return os;  
+} 
