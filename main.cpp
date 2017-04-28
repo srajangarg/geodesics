@@ -1,5 +1,6 @@
 #include "Mesh.hpp"
 #include "Viewer.hpp"
+#include "Algo.h"
 #include <cstdlib>
 
 int usage(int argc, char *argv[])
@@ -11,10 +12,46 @@ int usage(int argc, char *argv[])
     return -1;
 }
 
+void check_test()
+{
+    MMP mmp;
+
+    std::cout<<"Checking"<<std::endl;
+
+    Vertex * v1 = new Vertex(Vector3(0, 0, 0));
+    Vertex * v2 = new Vertex(Vector3(0, 1, 0));
+
+    Edge * e = new Edge(v1, v2);
+
+    Interval ii(0.25, 1, 0, 0.7, 0.05, 0, e, 0);
+    Interval ii2(0.75, 1, 0.3, 1, 0, 0, e, 0);
+
+    auto ret = mmp.intervals_heap.insert(ii);
+
+    // // Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
+    // //          Edge *edge_, bool invert = false)
+
+    mmp.edge_intervals[e].push_back(ret.first);
+
+    mmp.insert_new_interval(ii2);
+
+    // for (auto interval : mmp.edge_intervals[e])
+    // {
+    //     Interval i = *interval;
+    //     i.print();
+    // }
+
+    return;
+}
+
 int main(int argc, char *argv[])
 {
-    if (argc < 2)
-        return usage(argc, argv);
+    // if (argc < 2)
+    //     return usage(argc, argv);
+
+    check_test();
+
+    return 0;
 
     std::string in_path = argv[1];
 
