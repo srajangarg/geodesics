@@ -2,6 +2,7 @@
 #include "Point.hpp"
 #include "DGP/Vector2.hpp"
 #include <unordered_map>
+#include <cmath>
 #define EPS 1e-6
 using namespace std;
 
@@ -60,11 +61,12 @@ public:
         i.common = v;
         i.e1 = 0;
         i.e2 = std::numeric_limits<double>::infinity();
+        double ost, oend;
 
         if (v == edge->getEndpoint(0))
-            i.r = src.x();
+            i.r = src.x(), ost = st, oend = end;
         else
-            i.r = edge->length() - src.x();
+            i.r = edge->length() - src.x(), ost = edge->length() - st, oend = edge->length() - end;
 
         if (src.y() < EPS)
             return i;
@@ -74,16 +76,18 @@ public:
         i.r = Vector2(x, y).length();
         i.angle += angle2;
 
-        double num = st * y;
-        double den = sin(angle1) * (x - st) + cos(angle1) * y;
+
+
+        double num = ost * y;
+        double den = sin(angle1) * (x - ost) + cos(angle1) * y;
 
         if (abs(den) < EPS or num / den < 0)
             i.e1 = std::numeric_limits<double>::infinity();
         else
             i.e1 = num / den;
 
-        num = end * y;
-        den = sin(angle1) * (x - end) + cos(angle1) * y;
+        num = oend * y;
+        den = sin(angle1) * (x - oend) + cos(angle1) * y;
 
         if (abs(den) < EPS or num / den < 0)
             i.e2 = std::numeric_limits<double>::infinity();
