@@ -1,5 +1,5 @@
 CC := c++
-CFLAGS := -Wall -g -O2 -std=c++11 -fno-strict-aliasing
+CFLAGS := -Wall -g -std=c++11 -fno-strict-aliasing
 LIBS := -lX11 -lXi -lXmu -lglut -lGLU -lGL -lm
 ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 

@@ -19,6 +19,12 @@ public:
     {
     }
 
+    void print() const
+    {
+        std::cout<<"src.x : "<<pos.x()<<" src.y : "<<pos.y()<<" st : "<<st<<" end : "<<end<<" ps_d : "<<ps_d<<std::endl;
+        return;
+    }
+
     void set_st_end_pos(double st_, double end_, bool invert)
     {
         if (invert) {
@@ -115,32 +121,79 @@ public:
     {
         if (min_d != rhs.min_d)
             return min_d < rhs.min_d;
-        return (edge < rhs.edge);
+        else if (edge != rhs.edge)
+            return edge != rhs.edge;
+        else 
+            return st < rhs.st;
     }
 
     struct Info {
-        double angle;
-        double x, y;
+        double angle1, angle2, angle;
+        double e1, e2;
+        double x, y, r;
         Vertex *common;
     };
 
-    Info get_info_edge(Edge *e) const
+    Info get_info_edge(Vector2 src, Edge *e, Face * face) const
     {
         Vertex *v = e->getCommonVertex(*edge);
         assert(v != NULL);
 
         Info i;
-        i.angle = from->getAngle(v);
-        i.y = pos.y();
+        i.angle = face->getAngle(v);
+        i.y = src.y();
         i.common = v;
 
         if (v < edge->getOtherEndpoint(v))
-            i.x = pos.x();
+            i.x = src.x();
         else
-            i.x = edge->length() - pos.x();
+            i.x = edge->length() - src.x();
 
         return i;
     }
+
+    Info get_info_edge_(Vector2 src, Edge * e, Face * face) const
+    {
+        Vertex *v = e->getCommonVertex(*edge);
+        assert(v != NULL);
+
+        Info i;
+        i.angle1 = face->getAngle(v);
+        i.y = src.y();
+        i.common = v;
+
+        if (v < edge->getOtherEndpoint(v))
+            i.x = src.x();
+        else
+            i.x = edge->length() - src.x();
+
+        i.angle2 = atan(i.y/i.x);
+        i.r = sqrt(i.x*i.x + i.y*i.y);
+
+        i.angle = i.angle1 + i.angle2;
+
+        double num = st*i.y;
+        double den = sin(i.angle1)*(i.x - st) + cos(i.angle1)*i.y;
+
+        if (abs(den) < EPS)
+            i.e1 = std::numeric_limits<double>::infinity();
+        else
+            i.e1 = num/den;
+
+        num = end*i.y;
+        den = sin(i.angle1)*(i.x - end) + cos(i.angle1)*i.y;
+
+        if (abs(den) < EPS)
+            i.e2 = std::numeric_limits<double>::infinity();
+        else
+            i.e2 = num/den;
+
+        if (v > edge->getOtherEndpoint(v))
+            swap(i.e1, i.e2);
+
+        return i;
+    }
+
 
     // y >= 0
     // recompute_min_d() must be called if any of the 5 parameters change
@@ -155,6 +208,8 @@ public:
     Point *source;
     vector<Point *> destinations;
 
+    MMP(){}
+
     MMP(Mesh *m, Point *s, Point *d) : mesh(m), source(s)
     {
         assert(s->ptype != Point::UNDEFINED);
@@ -164,6 +219,51 @@ public:
     MMP(Mesh *m, Point *s, const vector<Point *> &dests) : mesh(m), source(s)
     {
         destinations = dests;
+    }
+
+
+    vector<Interval> get_intervals_source(Vector2 src, const Interval &w, Face *face,
+                                          double ps_d)
+    {
+        // face is the face on which the intervals propogate
+        // check whether src lies on the interval
+        vector<Interval> intervals_source;
+
+        if (src.y() < EPS and src.x() >= w.st and src.x() <= w.end) {
+            // take two intervals on the other two edges of the face
+            for (auto &edge : face->edges) {
+                if (edge == w.edge)
+                    continue;
+
+                auto info = w.get_info_edge(src, edge, face);
+                bool invert = info.common > edge->getOtherEndpoint(info.common);
+                Interval ii(info.x * cos(info.angle), info.x * sin(info.angle), 0,
+                            edge->length(), ps_d, face, edge, invert);
+                intervals_source.push_back(ii);
+            }
+        } else {
+            // draw lines and solve this
+            for (auto &edge : face->edges) {
+                if (edge == w.edge)
+                    continue;
+
+                auto info = w.get_info_edge_(src, edge, face);
+                bool invert = info.common > edge->getOtherEndpoint(info.common);
+
+                if (info.e1 >= 0 and info.e2 < 0 and info.e1 <= edge->length()) {
+                    Interval ii(info.r * cos(info.angle), info.r * sin(info.angle), info.e1, edge->length(), ps_d, face, edge,
+                                invert);
+                    intervals_source.push_back(ii);
+                } else if (info.e1 >= 0 and info.e2 >= 0 and info.e1 <= edge->length()) {
+                    Interval ii(info.r * cos(info.angle), info.r * sin(info.angle), info.e1, 
+                        info.e2 < edge->length() ? info.e2 : edge->length(), ps_d, face, edge, invert);
+                    intervals_source.push_back(ii);
+                }
+                // otherwise doesn't intersect this edge
+            }
+        }
+
+        return intervals_source;
     }
 
     void propagate()
@@ -183,7 +283,6 @@ public:
                 insert_new_interval(new_w);
         }
     }
-
     Interval best_first_interval(Point destination, vector<Point> &path)
     {
         if (destination.ptype == Point::EDGE) {
@@ -308,6 +407,10 @@ public:
     {
         // takes in  a segment st-end and returns 1or2 interval
         // with the closest source indicated on each interval
+        // std::cout<<"before source bisect"<<std::endl;
+        // std::cout<<"func_st : "<<st<<" func_end : "<<end<<std::endl;
+        // i1.print();
+        // i2.print();
         auto ps1 = i1.pos, ps2 = i2.pos;
         Vector2 st_v(st, 0), end_v(end, 0);
         vector<Interval> b_intervals;
@@ -323,13 +426,17 @@ public:
         double c = 0.25 * gamma * gamma - ps2.squaredLength() * beta * beta;
         bool equidist_pt = true;
 
-        if (b * b - 4 * a * c > 0)
-            x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
-        else
+        if(b * b - 4 * a * c < 0 or (a == 0.0 and b == 0.0 and abs(c) < EPS))
             equidist_pt = false;
+        else if(a == 0.0)
+            x = -b/c;
+        else
+            x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
 
         // equidist_pt is false when no such x exists, in that case one pseudo-source is
         // closer
+
+        // std::cout<<"x : "<<x<<std::endl;
 
         if (x >= st and x <= end and equidist_pt) {
             // [st, x] closer to ps1 or ps2?
@@ -342,11 +449,17 @@ public:
             }
         } else {
             // the complete interval is near to one single source
-            if ((ps2 - st_v).squaredLength() < (ps1 - st_v).squaredLength())
+            if (((ps2 - st_v).length() + i2.ps_d) < ((ps1 - st_v).length() + i1.ps_d))
                 b_intervals.push_back(Interval(ps2, st, end, i2));
             else
                 b_intervals.push_back(Interval(ps1, st, end, i1));
         }
+
+        // std::cout<<"after source bisect"<<std::endl;
+        // for(auto ii : b_intervals)
+        //     ii.print();
+
+        // std::cout<<"returning"<<std::endl;
 
         return b_intervals;
     }
@@ -355,7 +468,8 @@ public:
     {
         // remove too small intervals, merge intervals with same pos and ps_d etc.
         vector<Interval> sanitized_intervals;
-        Interval last_merged_interval = sanitized_intervals[0];
+        // std::cout<<
+        Interval last_merged_interval = intervals[0];
         auto it1 = intervals.begin();
         auto it2 = it1;
         // last_merged_interval is interval corresponding to [it1, it2)
@@ -466,6 +580,7 @@ public:
             }
         }
 
+        
         if (not new_pushed) {
             assert(it == intervals.end());
             new_intervals.push_back(new_w);
@@ -478,102 +593,29 @@ public:
             intervals_heap.erase(it);
         intervals.clear();
 
+        // for(auto inter : new_intervals)
+        //     inter.print();
+
+        
+        // std::cout<<new_intervals.size()<<std::endl;
+
         auto sanitized_new_intervals = sanitize_and_merge(new_intervals);
 
+
         for (auto interval : sanitized_new_intervals) {
+            // std::cout<<"printing all intervals "<<std::endl;
             interval.recompute_min_d();
+            
+            // for (auto ii : intervals_heap)
+            //     ii.print();
+
+            // std::cout<<"printed all intervals "<<std::endl;
             auto pp = intervals_heap.insert(interval);
-            assert(pp.second);
+            // std::cout<<pp.second<<std::endl;
+            interval.print();
+            // assert(pp.second);
             intervals.push_back(pp.first);
         }
-    }
-
-    vector<Interval> get_intervals_source(Vector2 src, const Interval &w, Face *face,
-                                          double ps_d)
-    {
-        // face is the face on which the intervals propogate
-        // check whether src lies on the interval
-        vector<Interval> intervals_source;
-
-        if (src.y() < EPS and src.x() >= w.st and src.x() <= w.end) {
-            // take two intervals on the other two edges of the face
-            for (auto &edge : face->edges) {
-                if (edge == w.edge)
-                    continue;
-
-                auto info = w.get_info_edge(edge);
-                bool invert = info.common > edge->getOtherEndpoint(info.common);
-                Interval ii(info.x * cos(info.angle), info.x * sin(info.angle), 0,
-                            edge->length(), ps_d, face, edge, invert);
-                intervals_source.push_back(ii);
-            }
-        } else {
-            // draw lines and solve this
-            for (auto &edge : face->edges) {
-                if (edge == w.edge)
-                    continue;
-
-                Vertex *v0 = edge->getEndpoint(0) < edge->getEndpoint(1)
-                                 ? edge->getEndpoint(0)
-                                 : edge->getEndpoint(1);
-                Vertex *v1 = edge->getOtherEndpoint(v0);
-
-                double theta1, theta2, r, src_x, src_y;
-                //   src
-                //  /
-                // / <theta2>
-                // v0----------v1
-                // \<theta1>
-                //  \
-                //   edge
-
-                if (edge->hasEndpoint(v0)) {
-                    theta1 = face->getAngle(v0);
-                    theta2 = atan(src.y() / src.x());
-                    r = sqrt(src.x() * src.x() + src.y() * src.y());
-                    src_x = src.x();
-                } else if (edge->hasEndpoint(v1)) {
-                    theta1 = face->getAngle(v1);
-                    theta2 = atan(src.y() / (edge->length() - src.x()));
-                    r = sqrt((edge->length() - src.x()) * (edge->length() - src.x())
-                             + src.y() * src.y());
-                    src_x = edge->length() - src.x();
-                }
-                src_y = src.y();
-
-                double theta = theta1 + theta2;
-
-                double e1 = (w.st * src_y)
-                            / (sin(theta1) * (src_x - w.st) + cos(theta1) * src_y);
-                double e2 = (w.end * src_y)
-                            / (sin(theta1) * (src_x - w.end) + cos(theta1) * src_y);
-
-                if (edge->hasEndpoint(v1))
-                    swap(e1, e2);
-
-                // Interval(double x_, double y_, double st_, double end_, double ps_d_,
-                // Face *from_,
-                // Edge *edge_, bool invert)
-                bool invert = edge->getEndpoint(0) > edge->getEndpoint(1);
-
-                if (e1 >= 0 and e2 < 0 and e1 <= edge->length()) {
-                    e2 = edge->length();
-                    Interval ii(r * cos(theta), r * sin(theta), e1, e2, ps_d, face, edge,
-                                invert);
-                    intervals_source.push_back(ii);
-                } else if (e1 >= 0 and e2 >= 0 and e1 <= edge->length()) {
-                    if (e2 > edge->length())
-                        e2 = edge->length();
-
-                    Interval ii(r * cos(theta), r * sin(theta), e1, e2, ps_d, face, edge,
-                                invert);
-                    intervals_source.push_back(ii);
-                }
-                // otherwise doesn't intersect this edge
-            }
-        }
-
-        return intervals_source;
     }
 
     vector<Interval> get_new_intervals(const Interval &w, Face *face)
