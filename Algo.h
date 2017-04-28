@@ -478,124 +478,60 @@ public:
         }
     }
 
-    Interval best_first_interval(Point dest, vector<Point> &path)
+    bool best_first_interval(Point dest, Interval& bf)
     {
         switch (dest.ptype) {
             case Point::VERTEX: {
+
+                auto v = (Vertex *)dest.p;
+                double mind = std::numeric_limits<double>::infinity();
+                for (auto& e : v->edges)
+                {
+                    Interval* ii = NULL;
+                    double dis;
+
+                    if (edge_intervals[e].empty())
+                        continue;
+
+                    if (v == e->getEndpoint(0))
+                    {   
+                        ii = edge_intervals[e].front();
+                        if (ii->st > EPS) continue;                        
+                        dis = ii->pos.length() + ii->ps_d;
+                    }
+                    else
+                    {
+                        ii = edge_intervals[e].back();
+                        if (e->length() - ii->end > EPS) continue;
+                        dis = (ii->pos - Vector2(e->length(), 0)).length() + ii->ps_d;
+                    }
+
+                    if (dis < mind)
+                    {
+                        bf = *ii;
+                        mind = dis;
+                    }
+                }
+
+                if (mind != std::numeric_limits<double>::infinity())
+                    return true;
             }
 
             case Point::EDGE: {
 
                 auto e = (Edge *)dest.p;
-                for (auto &itv : edge_intervals[e]) {
-                    if ((itv->st / e->length() >= dest.ratio)
-                        and (itv->end / e->length() <= dest.ratio))
-                        return *itv;
-                }
-            }
-
-            case Point::FACE: {
+                for (auto &itv : edge_intervals[e])
+                    if ((itv->st / e->length() >= dest.ratio) and (itv->end / e->length() <= dest.ratio))
+                    {
+                        bf = *itv; return true;
+                    }
             }
 
             default:
                 assert(false);
         }
 
-        // } else if (destination.ptype == Point::FACE) {
-        //     Face *f = (Face *)destination.p;
-        //     double distance = std::numeric_limits<double>::infinity();
-        //     Interval min_interval;
-        //     Point next_point(0, 0, 0); // temporarily an undefined point
-        //     for (auto it = f->edges.begin(); it != f->edges.end(); ++it) {
-        //         // pos += (*it)->getPosition();
-        //         auto &intervals = edge_intervals[*it];
-        //         // find the interval which is closest to the destination and source
-        //         for (auto interval : intervals) {
-        //             if (interval->from == f)
-        //                 continue;
-
-        //             // consider only such intervals through which the path can pass
-        //             // through
-        //             Vector3 pos = destination.pos;
-        //             Vector3 pos1 = (*it)->getEndpoint(0)->getPosition();
-        //             Vector3 pos2 = (*it)->getEndpoint(1)->getPosition();
-        //             //         pos(source)
-        //             //       /
-        //             //     /
-        //             //(0)pos1--(st,0)------(end,0)---pos2
-        //             ////////////////////////
-        //             //------------pos(destination)
-        //             if ((*it)->getEndpoint(0) > (*it)->getEndpoint(1))
-        //                 swap(pos1, pos2);
-
-        //             double dest_x = (pos - pos1).dot((pos2 - pos1).unit());
-        //             double dest_y = -sqrt((destination.pos - pos1).squaredLength()
-        //                                   - dest_x * dest_x);
-        //             // pythagoras theoram
-        //             // get the point where source.pos and dest.pos meet x-axis and
-        //             // then calculate the miimum distance to source through this
-        //             interval
-        //             double axis_x
-        //                 = interval->pos.x()
-        //                   - interval->pos.y() * ((interval->pos.x() - dest_x)
-        //                                          / (interval->pos.y() - dest_y));
-
-        //             double source_dist = interval->ps_d;
-        //             double ratio;
-        //             // minimum distance from dest to source through this interval
-        //             if (axis_x > interval->st and axis_x < interval->end) {
-        //                 source_dist += (Vector2(dest_x, dest_y) -
-        //                 interval->pos).length();
-        //                 ratio = axis_x / (*it)->length();
-        //             } else if (axis_x < interval->st) {
-        //                 source_dist
-        //                     += ((Vector2(dest_x, dest_y) - Vector2(interval->st, 0.0))
-        //                             .length()
-        //                         + (interval->pos - Vector2(interval->st,
-        //                         0.0)).length());
-        //                 ratio = interval->st / (*it)->length();
-        //             } else {
-        //                 source_dist
-        //                     += ((Vector2(dest_x, dest_y) - Vector2(interval->end, 0.0))
-        //                             .length()
-        //                         + (interval->pos - Vector2(interval->end,
-        //                         0.0)).length());
-        //                 ratio = interval->end / (*it)->length();
-        //             }
-
-        //             if (source_dist < distance) {
-        //                 distance = source_dist;
-        //                 min_interval = *interval;
-        //                 next_point = Point(*it, ratio);
-        //             }
-        //         }
-        //     }
-
-        //     path.push_back(next_point);
-        //     return min_interval;
-        // } else if (destination.ptype == Point::VERTEX) {
-        //     Vertex *v = (Vertex *)destination.p;
-        //     double distance = std::numeric_limits<double>::infinity();
-        //     Interval min_interval;
-        //     for (auto it = v->edges.begin(); it != v->edges.end(); ++it) {
-        //         Interval interval;
-        //         double source_dist = interval.ps_d;
-        //         if (v == (*it)->getEndpoint(0)) {
-        //             interval = *(edge_intervals[*it].front());
-        //             source_dist += (interval.pos - Vector2(interval.st, 0.0)).length();
-        //             source_dist += interval.st;
-        //         } else {
-        //             interval = *(edge_intervals[*it].back());
-        //             source_dist += (interval.pos - Vector2(interval.end,
-        //             0.0)).length();
-        //             source_dist += ((*it)->length() - interval.end);
-        //         }
-        //         if (source_dist < distance)
-        //             min_interval = interval;
-        //     }
-
-        //     return min_interval;
-        // }
+        return false;
     }
 
     void algorithm()
@@ -609,8 +545,11 @@ public:
 
     bool terminate()
     {
-        // FILL
-        return false;
+        Interval ii;
+        for (auto &dest : destinations)
+            if (not best_first_interval(dest, ii))
+                return false;
+        return true;
     }
 
     // invariants
