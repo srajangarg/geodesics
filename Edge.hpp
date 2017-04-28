@@ -18,6 +18,9 @@ public:
     {
         endpoints[0] = v0;
         endpoints[1] = v1;
+
+        if (v1 < v0)
+            std::swap(endpoints[0], endpoints[1]);
     }
 
     /** Get an endpoint of the edge. \a i = 0 returns the first endpoint and \a

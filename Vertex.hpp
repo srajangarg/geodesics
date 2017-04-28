@@ -108,7 +108,6 @@ public:
     /** Set the position of the vertex. */
     void setPosition(Vector3 const &position_)
     {
-        update_saddle_or_boundary();
         position = position_;
     }
 

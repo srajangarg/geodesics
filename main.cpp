@@ -16,19 +16,20 @@ void check_test()
 {
     MMP mmp;
 
-    std::cout<<"Checking"<<std::endl;
+    std::cout << "Checking" << std::endl;
 
-    Vertex * v1 = new Vertex(Vector3(0, 0, 0));
-    Vertex * v2 = new Vertex(Vector3(0, 1, 0));
+    Vertex *v1 = new Vertex(Vector3(0, 0, 0));
+    Vertex *v2 = new Vertex(Vector3(0, 1, 0));
 
-    Edge * e = new Edge(v1, v2);
+    Edge *e = new Edge(v1, v2);
 
-    Interval ii(0.25, 1, 0, 0.7, 0.05, 0, e, 0);
+    Interval ii(0.25, 1, 0, 0.7, 0.5, 0, e, 0);
     Interval ii2(0.75, 1, 0.3, 1, 0, 0, e, 0);
 
     auto ret = mmp.intervals_heap.insert(ii);
 
-    // // Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
+    // // Interval(double x_, double y_, double st_, double end_, double ps_d_, Face
+    // *from_,
     // //          Edge *edge_, bool invert = false)
 
     mmp.edge_intervals[e].push_back(ret.first);
@@ -72,7 +73,7 @@ int main(int argc, char *argv[])
                 << " vertices, " << mesh.edges.size() << " edges and "
                 << mesh.faces.size() << " faces from " << in_path;
 
-    if (target_num_faces >= 0 && mesh.faces.size() > target_num_faces) {
+    if (target_num_faces >= 0 && (int)mesh.faces.size() > target_num_faces) {
         mesh.updateBounds();
     }
 

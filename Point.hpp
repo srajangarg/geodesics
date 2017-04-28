@@ -75,6 +75,8 @@ public:
                 for (auto it = ((Face *)p)->edges.begin(); it != ((Face *)p)->edges.end();
                      ++it)
                     visible.push_back(*it);
+            default:
+                assert(false);
         }
         return visible;
     }
