@@ -42,6 +42,7 @@ public:
     void recompute_min_d();
     double compute_max_d();
     bool operator<(const Interval &rhs) const;
+    bool operator==(const Interval &rhs) const;
 
     struct Info {
         double angle, r;
@@ -374,6 +375,8 @@ public:
 
         for (auto &itv : intervals)
             delete itv;
+
+        auto old_intervals = intervals;
         intervals.clear();
 
         auto sanitized_new_intervals = sanitize_and_merge(new_intervals);
@@ -381,6 +384,14 @@ public:
         cout<<"Old intervals cleared, Intervals added are"<<endl;
 
         for (auto &interval : sanitized_new_intervals) {
+
+            bool ditch = false;
+            for(auto &old_itv : old_intervals)
+                if (interval == *old_itv)
+                    ditch = true;
+
+            if (ditch) continue;
+
             interval.recompute_min_d();
             cout<<interval<<endl;
             auto added_intv = new Interval(interval);
@@ -515,6 +526,7 @@ public:
 
                 if (mind != std::numeric_limits<double>::infinity())
                     return true;
+                break;
             }
 
             case Point::EDGE: {
@@ -525,6 +537,7 @@ public:
                     {
                         bf = *itv; return true;
                     }
+                break;
             }
 
             default:
@@ -537,7 +550,6 @@ public:
     void algorithm()
     {
         initialize();
-
         while (not intervals_heap.empty() and not terminate()) {
             propagate();
         }
@@ -545,11 +557,12 @@ public:
 
     bool terminate()
     {
-        Interval ii;
-        for (auto &dest : destinations)
-            if (not best_first_interval(dest, ii))
-                return false;
-        return true;
+        // Interval ii;
+        // for (auto &dest : destinations)
+        //     if (not best_first_interval(dest, ii))
+        //         return false;
+        // return true;
+        return false;
     }
 
     // invariants
