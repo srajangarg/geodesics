@@ -372,35 +372,43 @@ public:
         for (auto &it : intervals)
             intervals_heap.erase(it);
 
-        for (auto &itv : intervals)
-            delete itv;
-
+        set<Interval*> not_to_delete;
         auto old_intervals = intervals;
         intervals.clear();
-
+        
         auto sanitized_new_intervals = sanitize_and_merge(new_intervals);
-
-        cout << "Old intervals cleared, Intervals added are" << endl;
+        cout << "Old intervals cleared, all intervals on "<<*new_w.edge<<" are :"<< endl;
 
         for (auto &interval : sanitized_new_intervals) {
 
-            bool ditch = false;
+            Interval* keep_old_itv = NULL;
             for (auto &old_itv : old_intervals)
                 if (interval == *old_itv)
-                    ditch = true;
-
-            if (ditch)
-                continue;
+                    keep_old_itv = old_itv;
 
             interval.recompute_min_d();
             cout << interval << endl;
-            auto added_intv = new Interval(interval);
-            auto pp = intervals_heap.insert(added_intv);
-            assert(pp.second);
-            intervals.push_back(added_intv);
+
+            if (keep_old_itv)
+            {
+                intervals.push_back(keep_old_itv);
+                not_to_delete.insert(keep_old_itv);
+            }
+            else
+            {
+                auto added_intv = new Interval(interval);
+                auto pp = intervals_heap.insert(added_intv);
+                assert(pp.second);
+                intervals.push_back(added_intv);
+            }
         }
         cout << endl;
+    
+        for (auto &itv : old_intervals)
+            if (not_to_delete.find(itv) == not_to_delete.end())
+                delete itv;
     }
+
 
     vector<Interval> get_new_intervals(Interval &w, Face *face)
     {
