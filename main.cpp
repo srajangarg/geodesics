@@ -14,12 +14,30 @@ int usage(int argc, char *argv[])
 
 void test(Mesh & mesh)
 {   
-    MMP mmp;
-    mmp.mesh = &mesh;
-    Point p(&(mesh.edges.front()));
+
+    for (auto &f : mesh.faces)
+    {
+        cout<<&f<<endl;
+        for (auto v : f.vertices)
+            cout<<v<<" ";
+        cout<<endl;
+    }
+    // cout<<endl<<"Done\n";
+
+    for (auto &v : mesh.vertices)
+        v.update_saddle_or_boundary();
+    // cout<<"oul"<<endl;
+
+    Point p(&(mesh.vertices.front()));
+
+    Point d(&(mesh.vertices.back()));
     
-    std::cout<<"src : edge "<<mesh.edges.front().getEndpoint(0)->getPosition()<<" "
-    <<mesh.edges.front().getEndpoint(1)->getPosition()<<std::endl;
+    MMP mmp(&mesh, p, d);
+    // std::cout<<"src : edge "<<mesh.edges.front().getEndpoint(0)->getPosition()<<" "
+    // <<mesh.edges.front().getEndpoint(1)->getPosition()<<std::endl;
+
+    cout<<"src : vertex "<<mesh.vertices.front().getPosition()<<endl;
+
 
     mmp.source = p;
 

@@ -77,6 +77,11 @@ bool Interval::operator<(const Interval &rhs) const
         return st < rhs.st;
 }
 
+bool Interval::operator==(const Interval &rhs) const
+{
+    return (abs(st - rhs.st) < EPS and abs(end - rhs.end) < EPS and edge == rhs.edge and from == rhs.from);
+}
+
 void Interval::set_st_end_pos(double st_, double end_, bool invert)
 {
     if (invert) {
