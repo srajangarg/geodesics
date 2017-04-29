@@ -100,6 +100,11 @@ void Interval::set_st_end_pos(double st_, double end_, bool invert)
 ostream &operator<<(ostream &os, const Interval &e)
 {
     os << "I(st/end: (" << e.st << ", " << e.end << "), pos: " << e.pos
-       << ", psd: " << e.ps_d << ", " << *e.edge << ")";
+       << ", psd: " << e.ps_d << ", " << *e.edge;
+
+    if (e.from)
+        os << ", " << *e.from << ")";
+    else
+        os << ", NO FACE)";
     return os;
 }

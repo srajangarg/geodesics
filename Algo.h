@@ -16,6 +16,7 @@ public:
     Edge *edge;
     Face *from;
     Interval *parent;
+    bool propagated = false;
 
     Interval()
     {
@@ -41,6 +42,7 @@ public:
         double angle, r;
         double e1, e2;
         Vertex *common;
+        bool possible = true;
     };
 
     Info get_info_edge(Vector2 src, Edge *e, Face *face) const
@@ -68,6 +70,11 @@ public:
         double angle1 = i.angle, angle2 = atan2(y, x);
         i.r = Vector2(x, y).length();
         i.angle += angle2;
+
+        if (atan2(y, x - st) > M_PI - angle1) {
+            i.possible = false;
+            return i;
+        }
 
         double num = ost * y;
         double den = sin(angle1) * (x - ost) + cos(angle1) * y;
@@ -146,7 +153,7 @@ public:
             auto info = w.get_info_edge(src, edge, face);
             bool invert = info.common > edge->getOtherEndpoint(info.common);
 
-            if (info.e1 < edge->length()) {
+            if (info.possible and info.e1 < edge->length()) {
 
                 double x = info.r * cos(info.angle);
                 if (abs(x) < EPS)
@@ -215,23 +222,25 @@ public:
 
     void propagate()
     {
-        Interval prop_w = **intervals_heap.begin();
-        Edge *prop_e = prop_w.edge;
+        Interval *prop_w = *intervals_heap.begin();
+        Edge *prop_e = prop_w->edge;
 
         intervals_heap.erase(intervals_heap.begin());
-        update_not_reached(prop_w);
+        update_not_reached(*prop_w);
 
         for (auto &face : prop_e->faces) {
-            if (prop_w.from == face)
+            if (prop_w->from == face)
                 continue;
 
-            cout << "Propagating " << prop_w << " on " << *face << endl;
-            auto candidates = get_new_intervals(prop_w, face);
+            cout << "Propagating " << *prop_w << " on " << *face << endl;
+            auto candidates = get_new_intervals(*prop_w, face);
 
             cout << endl;
             for (auto &new_w : candidates)
                 insert_new_interval(new_w);
         }
+
+        prop_w->propagated = true;
     }
 
     vector<Point> trace_back(Point destination)
@@ -306,7 +315,19 @@ public:
             }
         } else {
             // the complete interval is near to one single source
-            if (((ps2 - st_v).length() + i2.ps_d) < ((ps1 - st_v).length() + i1.ps_d))
+            cout<<"i1 val : "<<((ps1 - st_v).length() + i1.ps_d)<<endl;
+            cout<<"i2 val : "<<((ps2 - st_v).length() + i2.ps_d)<<endl;
+
+            auto i1val = ((ps1 - st_v).length() + i1.ps_d);
+            auto i2val = ((ps2 - st_v).length() + i2.ps_d);
+
+            if (abs(i1val -i2val) < EPS)
+            {
+                i1val = ((ps1 - end_v).length() + i1.ps_d);
+                i2val = ((ps2 - end_v).length() + i2.ps_d);
+            }
+
+            if (i2val < i1val)
                 b_intervals.push_back(Interval(ps2, st, end, i2));
             else
                 b_intervals.push_back(Interval(ps1, st, end, i1));
@@ -411,8 +432,17 @@ public:
                 Interval new_w_short(new_w);
                 new_w_short.end = w->st;
                 new_intervals.push_back(new_w_short);
+
+                cout<<"source bisect- ----"<<endl;
+                cout<<w->st<<" "<<w->end<<endl;
+                cout<<"i1 : "<<new_w<<endl;
+                cout<<"i2 : "<<(*w)<<endl;
                 for (auto &interval : source_bisect(w->st, w->end, new_w, *w))
-                    new_intervals.push_back(interval);
+                    cout<<interval<<endl, new_intervals.push_back(interval);
+                cout<<"----"<<endl;
+
+
+
                 new_w.st = w->end;
             } else if (w->st < new_w.st and w->end > new_w.end) {
                 //     ----new----
@@ -465,7 +495,8 @@ public:
             if (keep_old_itv) {
                 intervals.push_back(keep_old_itv);
                 not_to_delete.insert(keep_old_itv);
-                intervals_heap.insert(keep_old_itv);
+                if (not keep_old_itv->propagated)
+                    intervals_heap.insert(keep_old_itv);
             } else {
                 auto added_intv = new Interval(interval);
                 auto pp = intervals_heap.insert(added_intv);
@@ -586,8 +617,39 @@ public:
     void algorithm()
     {
         initialize();
-        while (not intervals_heap.empty() and not not_reached.empty()) {
+        int x;
+        cout << "HEAP ---" << endl;
+        for (auto &itv : intervals_heap)
+            cout << *itv << endl;
+        cout << "----" << endl << endl;
+
+        cout << "EDGE MAP ---" << endl;
+        for (auto &pp : edge_intervals) {
+            cout << endl;
+            cout << *(pp.first) << " : " << endl;
+            for (auto &w : pp.second)
+                cout << *w << endl;
+        }
+        cout << "----" << endl << endl;
+        // cin>>x;
+
+        while (not intervals_heap.empty() /*and not not_reached.empty()*/) {
             propagate();
+
+            cout << "HEAP ---" << endl;
+            for (auto &itv : intervals_heap)
+                cout << *itv << endl;
+            cout << "----" << endl << endl;
+
+            cout << "EDGE MAP ---" << endl;
+            for (auto &pp : edge_intervals) {
+                cout << endl;
+                cout << *(pp.first) << " : " << endl;
+                for (auto &w : pp.second)
+                    cout << *w << endl;
+            }
+            cout << "----" << endl << endl;
+            // cin>>x;
         }
     }
 
