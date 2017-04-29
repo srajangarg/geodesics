@@ -26,7 +26,7 @@ Edge *Edge::nextAroundEndpoint(int i)
 ostream &operator<<(ostream &os, const Edge &e)
 {
     os << "E(" << *e.getEndpoint(0) << " -- ";
-    os << *e.getEndpoint(1) << ", " << &e << ")";
+    os << *e.getEndpoint(1) << /*", " << &e <<*/ ")";
     return os;
 }
 
