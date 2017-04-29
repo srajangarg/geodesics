@@ -82,8 +82,8 @@ void Vertex::update_saddle_or_boundary()
     }
 }
 
-ostream& operator<<(ostream& os, const Vertex& e)  
-{  
-    os << "V(" << e.getPosition() << ", "<<&e<<")";
-    return os;  
-} 
+ostream &operator<<(ostream &os, const Vertex &e)
+{
+    os << "v" << e.index;
+    return os;
+}

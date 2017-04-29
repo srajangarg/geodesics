@@ -90,6 +90,10 @@ bool Mesh::loadOFF(std::string const &path)
         return false;
     }
 
+    vertices.reserve(nv);
+    edges.reserve(max(ne, (nv + nf) * 2 + 10));
+    faces.reserve(nf);
+
     std::vector<Vertex *> indexed_vertices;
     Vector3 p;
     for (long i = 0; i < nv; ++i) {
@@ -102,7 +106,7 @@ bool Mesh::loadOFF(std::string const &path)
         Vertex *v = addVertex(p);
         if (!v)
             return false;
-
+        v->index = i;
         indexed_vertices.push_back(v);
     }
 
@@ -137,7 +141,7 @@ bool Mesh::loadOFF(std::string const &path)
             face_vertices.end()); // ok if this fails, just skip the face with a warning
     }
 
-    for (auto& v : vertices)
+    for (auto &v : vertices)
         v.update_saddle_or_boundary();
 
     setName(FilePath::objectName(path));

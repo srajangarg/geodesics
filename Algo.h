@@ -21,13 +21,6 @@ public:
     {
     }
 
-    void print() const
-    {
-        std::cout << "src.x : " << pos.x() << " src.y : " << pos.y() << " st : " << st
-                  << " end : " << end << " ps_d : " << ps_d << std::endl;
-        return;
-    }
-
     void set_st_end_pos(double st_, double end_, bool invert);
 
     Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
@@ -100,7 +93,7 @@ public:
 
     // y >= 0
     // recompute_min_d() must be called if any of the 5 parameters change
-    friend ostream& operator<<(ostream& os, const Interval& e);
+    friend ostream &operator<<(ostream &os, const Interval &e);
 };
 
 class MMP
@@ -150,9 +143,18 @@ public:
             bool invert = info.common > edge->getOtherEndpoint(info.common);
 
             if (info.e1 < edge->length()) {
-                new_intervals.push_back(
-                    Interval(info.r * cos(info.angle), info.r * sin(info.angle), info.e1,
-                             min(info.e2, edge->length()), ps_d, face, edge, &w, invert));
+
+                double x = info.r * cos(info.angle);
+                if (abs(x) < EPS)
+                    x = 0;
+
+                double y = abs(info.r * sin(info.angle));
+                if (y < EPS)
+                    y = 0;
+
+                new_intervals.push_back(Interval(x, y, info.e1,
+                                                 min(info.e2, edge->length()), ps_d, face,
+                                                 edge, &w, invert));
             }
             // otherwise doesn't intersect this edge
         }
@@ -171,13 +173,10 @@ public:
             if (prop_w.from == face)
                 continue;
 
-            cout<<"Propagating "<<prop_w<<" on face* "<<face<<endl;
-            cout<<"New intervals to be added are "<<endl;
+            cout << "Propagating " << prop_w << " on " << *face << endl;
             auto candidates = get_new_intervals(prop_w, face);
 
-            for (auto &new_w : candidates)
-                cout<<new_w<<endl;
-            cout<<endl;
+            cout << endl;
             for (auto &new_w : candidates)
                 insert_new_interval(new_w);
         }
@@ -284,7 +283,7 @@ public:
     {
         // updates edge_intervals[e] and intervals according to algo discussed
         // should be O(edge_intervals[e])
-        cout<<"Inserting new interval "<<new_w<<endl;
+        cout << "Inserting new interval " << new_w << endl;
 
         auto &intervals = edge_intervals[new_w.edge];
         vector<Interval> new_intervals;
@@ -381,25 +380,26 @@ public:
 
         auto sanitized_new_intervals = sanitize_and_merge(new_intervals);
 
-        cout<<"Old intervals cleared, Intervals added are"<<endl;
+        cout << "Old intervals cleared, Intervals added are" << endl;
 
         for (auto &interval : sanitized_new_intervals) {
 
             bool ditch = false;
-            for(auto &old_itv : old_intervals)
+            for (auto &old_itv : old_intervals)
                 if (interval == *old_itv)
                     ditch = true;
 
-            if (ditch) continue;
+            if (ditch)
+                continue;
 
             interval.recompute_min_d();
-            cout<<interval<<endl;
+            cout << interval << endl;
             auto added_intv = new Interval(interval);
             auto pp = intervals_heap.insert(added_intv);
             assert(pp.second);
             intervals.push_back(added_intv);
         }
-        cout<<endl;
+        cout << endl;
     }
 
     vector<Interval> get_new_intervals(Interval &w, Face *face)
@@ -413,23 +413,39 @@ public:
             // treat v0 as a new source
 
             Vector2 new_src = Vector2(0, 0);
-            for (auto &ii : prop_thru_interval(new_src, w, face,
-                                               w.ps_d + (new_src - w.pos).length()))
-                new_intervals.push_back(ii);
+            auto intervals = prop_thru_interval(new_src, w, face,
+                                                w.ps_d + (new_src - w.pos).length());
+
+            if (intervals.size())
+                cout << intervals.size() << " to be added for saddle " << *v0 << ":"
+                     << endl;
+
+            for (auto &ii : intervals)
+                cout << ii << endl, new_intervals.push_back(ii);
         }
 
         if (edge->length() - w.end < EPS and v1->saddle_or_boundary) {
             // treat v1 as a new source
 
             Vector2 new_src = Vector2(edge->length(), 0);
-            for (auto ii : prop_thru_interval(new_src, w, face,
-                                              w.ps_d + (new_src - w.pos).length()))
-                new_intervals.push_back(ii);
+
+            auto intervals = prop_thru_interval(new_src, w, face,
+                                                w.ps_d + (new_src - w.pos).length());
+            if (intervals.size())
+                cout << intervals.size() << " to be added for saddle " << *v1 << ":"
+                     << endl;
+
+            for (auto &ii : intervals)
+                cout << ii << endl, new_intervals.push_back(ii);
         }
 
         // generate intervals from (usual) current source
-        for (auto ii : prop_thru_interval(w.pos, w, face, w.ps_d))
-            new_intervals.push_back(ii);
+        auto intervals = prop_thru_interval(w.pos, w, face, w.ps_d);
+
+        if (intervals.size())
+            cout << intervals.size() << " to be added for usual propogate:" << endl;
+        for (auto &ii : intervals)
+            cout << ii << endl, new_intervals.push_back(ii);
         return new_intervals;
     }
 
@@ -451,7 +467,7 @@ public:
         assert(check_mesh_sanity());
         auto visible = source.get_visible_edges();
 
-        cout<<"Making initial intervals ..."<<endl;
+        cout << "Making initial intervals ..." << endl;
         switch (source.ptype) {
             case Point::VERTEX: {
                 for (auto &e : visible) {
@@ -489,36 +505,33 @@ public:
         }
     }
 
-    bool best_first_interval(Point dest, Interval& bf)
+    bool best_first_interval(Point dest, Interval &bf)
     {
         switch (dest.ptype) {
             case Point::VERTEX: {
 
                 auto v = (Vertex *)dest.p;
                 double mind = std::numeric_limits<double>::infinity();
-                for (auto& e : v->edges)
-                {
-                    Interval* ii = NULL;
+                for (auto &e : v->edges) {
+                    Interval *ii = NULL;
                     double dis;
 
                     if (edge_intervals[e].empty())
                         continue;
 
-                    if (v == e->getEndpoint(0))
-                    {   
+                    if (v == e->getEndpoint(0)) {
                         ii = edge_intervals[e].front();
-                        if (ii->st > EPS) continue;                        
+                        if (ii->st > EPS)
+                            continue;
                         dis = ii->pos.length() + ii->ps_d;
-                    }
-                    else
-                    {
+                    } else {
                         ii = edge_intervals[e].back();
-                        if (e->length() - ii->end > EPS) continue;
+                        if (e->length() - ii->end > EPS)
+                            continue;
                         dis = (ii->pos - Vector2(e->length(), 0)).length() + ii->ps_d;
                     }
 
-                    if (dis < mind)
-                    {
+                    if (dis < mind) {
                         bf = *ii;
                         mind = dis;
                     }
@@ -533,9 +546,10 @@ public:
 
                 auto e = (Edge *)dest.p;
                 for (auto &itv : edge_intervals[e])
-                    if ((itv->st / e->length() >= dest.ratio) and (itv->end / e->length() <= dest.ratio))
-                    {
-                        bf = *itv; return true;
+                    if ((itv->st / e->length() >= dest.ratio)
+                        and (itv->end / e->length() <= dest.ratio)) {
+                        bf = *itv;
+                        return true;
                     }
                 break;
             }

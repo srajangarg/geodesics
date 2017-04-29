@@ -12,45 +12,24 @@ int usage(int argc, char *argv[])
     return -1;
 }
 
-void test(Mesh & mesh)
-{   
-
-    for (auto &f : mesh.faces)
-    {
-        cout<<&f<<endl;
-        for (auto v : f.vertices)
-            cout<<v<<" ";
-        cout<<endl;
-    }
-    // cout<<endl<<"Done\n";
-
-    for (auto &v : mesh.vertices)
-        v.update_saddle_or_boundary();
-    // cout<<"oul"<<endl;
-
+void test(Mesh &mesh)
+{
     Point p(&(mesh.vertices.front()));
-
     Point d(&(mesh.vertices.back()));
-    
+
     MMP mmp(&mesh, p, d);
-    // std::cout<<"src : edge "<<mesh.edges.front().getEndpoint(0)->getPosition()<<" "
-    // <<mesh.edges.front().getEndpoint(1)->getPosition()<<std::endl;
-
-    cout<<"src : vertex "<<mesh.vertices.front().getPosition()<<endl;
-
-
-    mmp.source = p;
+    cout << "src : vertex " << mesh.vertices.front().index << endl;
+    cout << "dest : vertex " << mesh.vertices.back().index << endl;
 
     mmp.algorithm();
 
-    for (auto &pp : mmp.edge_intervals)
-    {   
-        cout<<endl;
-        cout<<*(pp.first)<<" : "<<endl;
-        for (auto& w: pp.second)
-            cout<<*w<<endl;
+    for (auto &pp : mmp.edge_intervals) {
+        cout << endl;
+        cout << *(pp.first) << " : " << endl;
+        for (auto &w : pp.second)
+            cout << *w << endl;
     }
-    cout<<endl;
+    cout << endl;
 
     return;
 }

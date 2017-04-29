@@ -159,7 +159,7 @@ public:
      *
      * @return True if the face was found and removed, else false.
      */
-    bool removeFace(std::list<Face>::iterator face)
+    bool removeFace(std::vector<Face>::iterator face)
     {
         Face *fp = &(*face);
 
@@ -232,10 +232,10 @@ private:
     bool saveOFF(std::string const &path) const;
 
 public:
-    std::list<Face> faces;      ///< Set of mesh faces.
-    std::list<Vertex> vertices; ///< Set of mesh vertices.
-    std::list<Edge> edges;      ///< Set of mesh edges.
-    AxisAlignedBox3 bounds;     ///< Mesh bounding box.
+    std::vector<Face> faces;      ///< Set of mesh faces.
+    std::vector<Vertex> vertices; ///< Set of mesh vertices.
+    std::vector<Edge> edges;      ///< Set of mesh edges.
+    AxisAlignedBox3 bounds;       ///< Mesh bounding box.
 
     mutable std::vector<Vertex *>
         face_vertices; ///< Internal cache of vertex pointers for a face.

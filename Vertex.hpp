@@ -235,6 +235,7 @@ public:
 
     Vector3 position;
     Vector3 normal;
+    unsigned long index;
     ColorRGBA color;
     std::list<Edge *> edges;
     std::list<Face *> faces;
@@ -242,8 +243,7 @@ public:
     bool saddle_or_boundary;
     float normal_normalization_factor;
 
-    friend ostream& operator<<(ostream& os, const Vertex& e);
+    friend ostream &operator<<(ostream &os, const Vertex &e);
 }; // class Edge
-
 
 #endif

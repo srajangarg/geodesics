@@ -91,3 +91,13 @@ double Face::getAngle(Vertex *v)
 
     return acos(abs((e1).dot(e2)) / sqrt((e1).squaredLength() * (e2).squaredLength()));
 }
+
+ostream &operator<<(ostream &os, const Face &f)
+{
+    os << "F(" << *(*f.vertices.begin());
+    for (auto it = f.vertices.begin(); it != f.vertices.end(); it++)
+        if (it != f.vertices.begin())
+            os << " -- " << **it;
+    os << ")";
+    return os;
+}

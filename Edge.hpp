@@ -230,7 +230,7 @@ public:
     Vertex *endpoints[2];
     std::list<Face *> faces;
 
-    friend ostream& operator<<(ostream& os, const Edge& e);
+    friend ostream &operator<<(ostream &os, const Edge &e);
 }; // class Edge
 
 #endif

@@ -2,6 +2,7 @@
 #define __A2_Face_hpp__
 
 #include "Common.hpp"
+using namespace std;
 #include "DGP/Colors.hpp"
 #include "DGP/Vector3.hpp"
 #include <list>
@@ -247,6 +248,8 @@ public:
     bool contains(Vector3 const &p) const;
 
 public:
+    friend ostream &operator<<(ostream &os, const Face &f);
+
     friend class Mesh;
     friend class Edge;
 

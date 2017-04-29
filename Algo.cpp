@@ -9,6 +9,7 @@ Interval::Interval(double x_, double y_, double st_, double end_, double ps_d_,
     pos = Vector2(x_, y_);
     parent = par;
     set_st_end_pos(st_, end_, invert);
+
     assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
     // INVARIANT - st is always close to lower endpoint than higher endpoint pointer
     recompute_min_d();
@@ -79,7 +80,8 @@ bool Interval::operator<(const Interval &rhs) const
 
 bool Interval::operator==(const Interval &rhs) const
 {
-    return (abs(st - rhs.st) < EPS and abs(end - rhs.end) < EPS and edge == rhs.edge and from == rhs.from);
+    return (abs(st - rhs.st) < EPS and abs(end - rhs.end) < EPS and edge == rhs.edge
+            and from == rhs.from);
 }
 
 void Interval::set_st_end_pos(double st_, double end_, bool invert)
@@ -95,8 +97,9 @@ void Interval::set_st_end_pos(double st_, double end_, bool invert)
     }
 }
 
-ostream& operator<<(ostream& os, const Interval& e)
+ostream &operator<<(ostream &os, const Interval &e)
 {
-    os<<"I("<<e.st<<", "<<e.end<<", "<<e.pos<<", "<<e.ps_d<<", on "<<*e.edge<<")";
+    os << "I(st/end: (" << e.st << ", " << e.end << "), pos: " << e.pos
+       << ", psd: " << e.ps_d << ", on " << *e.edge << ")";
     return os;
 }
