@@ -46,7 +46,7 @@ public:
         Vertex *v0 = e->getEndpoint(0);
         Vertex *v1 = e->getEndpoint(1);
 
-        pos = rat * v0->getPosition() + (1 - rat) * v1->getPosition();
+        pos = (1 - rat) * v0->getPosition() +  rat * v1->getPosition();
         ptype = EDGE;
     }
 
@@ -54,6 +54,13 @@ public:
     {
         pos = Vector3(x, y, z);
         ptype = UNDEFINED;
+    }
+
+    bool operator<(const Point &rhs) const
+    {
+        if (p != rhs.p)
+            return p < rhs.p;
+        return pos < rhs.pos;
     }
 
     vector<Edge *> get_visible_edges()

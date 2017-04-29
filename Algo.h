@@ -102,7 +102,8 @@ public:
     Mesh *mesh;
     unordered_map<Edge *, list<Interval *>> edge_intervals;
     Point source;
-    vector<Point> destinations;
+    map<Point, Interval *> best_interval_dest;
+    set<Point> not_reached;
 
     struct IntervalPtrComp {
         bool operator()(const Interval *lhs, const Interval *rhs) const
@@ -119,12 +120,15 @@ public:
     MMP(Mesh *m, Point s, Point d) : mesh(m), source(s)
     {
         assert(s.ptype != Point::UNDEFINED);
-        destinations.push_back(d);
+        best_interval_dest[d] = NULL;
+        not_reached.insert(d);
     }
 
     MMP(Mesh *m, Point s, const vector<Point> &dests) : mesh(m), source(s)
     {
-        destinations = dests;
+        for (auto &d : dests)
+            best_interval_dest[d] = NULL;
+        not_reached.insert(dests.begin(), dests.end());
     }
 
     vector<Interval> prop_thru_interval(Vector2 src, Interval &w, Face *face, double ps_d)
@@ -162,12 +166,60 @@ public:
         return new_intervals;
     }
 
+    void update_not_reached(Interval &w)
+    {
+        vector<set<Point>::iterator> to_erase;
+        for (auto it = not_reached.begin(); it != not_reached.end(); it++) {
+            switch (it->ptype) {
+                case Point::VERTEX: {
+
+                    auto v = (Vertex *)it->p;
+                    if (not v->hasIncidentEdge(w.edge))
+                        continue;
+
+                    if (v == w.edge->getEndpoint(0)) {
+                        if (w.st > EPS)
+                            continue;
+                    } else {
+                        if (w.edge->length() - w.end > EPS)
+                            continue;
+                    }
+
+                    best_interval_dest[*it] = &w;
+                    to_erase.push_back(it);
+                    break;
+                }
+
+                case Point::EDGE: {
+
+                    auto e = (Edge *)it->p;
+                    if (e != w.edge)
+                        continue;
+
+                    if (w.st / e->length() > it->ratio or w.end / e->length() < it->ratio)
+                        continue;
+
+                    best_interval_dest[*it] = &w;
+                    to_erase.push_back(it);
+                    break;
+                }
+
+                default:
+                    assert(false);
+            }
+        }
+
+        for (auto &it : to_erase)
+            not_reached.erase(it);
+    }
+
     void propagate()
     {
         Interval prop_w = **intervals_heap.begin();
         Edge *prop_e = prop_w.edge;
 
         intervals_heap.erase(intervals_heap.begin());
+        update_not_reached(prop_w);
 
         for (auto &face : prop_e->faces) {
             if (prop_w.from == face)
@@ -184,8 +236,10 @@ public:
 
     vector<Point> trace_back(Point destination)
     {
-        assert(false);
-        // vector<Point> path;
+        vector<Point> path;
+        assert(best_interval_dest[destination] != NULL);
+
+        
         // assert(destination.ptype != Point::UNDEFINED);
 
         // path.push_back(destination);
@@ -194,6 +248,8 @@ public:
 
         // from the given destination and best_interval, find the next intervals and point
         // accordingly
+
+        return path;
     }
 
     vector<Interval> source_bisect(double st, double end, const Interval &i1,
@@ -257,7 +313,7 @@ public:
             // check if w is too small
             if (w.end - w.st > EPS) {
                 // check if last merged interval and w have same pos and everything
-                if (last_merged_interval.pos == w.pos
+                if ((last_merged_interval.pos - w.pos).length() < EPS
                     and abs(last_merged_interval.ps_d - w.ps_d) < EPS) {
                     // merge last_merge_interval and w
                     last_merged_interval.end = w.end;
@@ -372,16 +428,17 @@ public:
         for (auto &it : intervals)
             intervals_heap.erase(it);
 
-        set<Interval*> not_to_delete;
+        set<Interval *> not_to_delete;
         auto old_intervals = intervals;
         intervals.clear();
-        
+
         auto sanitized_new_intervals = sanitize_and_merge(new_intervals);
-        cout << "Old intervals cleared, all intervals on "<<*new_w.edge<<" are :"<< endl;
+        cout << "Old intervals cleared, all intervals on " << *new_w.edge
+             << " are :" << endl;
 
         for (auto &interval : sanitized_new_intervals) {
 
-            Interval* keep_old_itv = NULL;
+            Interval *keep_old_itv = NULL;
             for (auto &old_itv : old_intervals)
                 if (interval == *old_itv)
                     keep_old_itv = old_itv;
@@ -389,13 +446,10 @@ public:
             interval.recompute_min_d();
             cout << interval << endl;
 
-            if (keep_old_itv)
-            {
+            if (keep_old_itv) {
                 intervals.push_back(keep_old_itv);
                 not_to_delete.insert(keep_old_itv);
-            }
-            else
-            {
+            } else {
                 auto added_intv = new Interval(interval);
                 auto pp = intervals_heap.insert(added_intv);
                 assert(pp.second);
@@ -403,12 +457,11 @@ public:
             }
         }
         cout << endl;
-    
+
         for (auto &itv : old_intervals)
             if (not_to_delete.find(itv) == not_to_delete.end())
                 delete itv;
     }
-
 
     vector<Interval> get_new_intervals(Interval &w, Face *face)
     {
@@ -513,78 +566,12 @@ public:
         }
     }
 
-    bool best_first_interval(Point dest, Interval &bf)
-    {
-        switch (dest.ptype) {
-            case Point::VERTEX: {
-
-                auto v = (Vertex *)dest.p;
-                double mind = std::numeric_limits<double>::infinity();
-                for (auto &e : v->edges) {
-                    Interval *ii = NULL;
-                    double dis;
-
-                    if (edge_intervals[e].empty())
-                        continue;
-
-                    if (v == e->getEndpoint(0)) {
-                        ii = edge_intervals[e].front();
-                        if (ii->st > EPS)
-                            continue;
-                        dis = ii->pos.length() + ii->ps_d;
-                    } else {
-                        ii = edge_intervals[e].back();
-                        if (e->length() - ii->end > EPS)
-                            continue;
-                        dis = (ii->pos - Vector2(e->length(), 0)).length() + ii->ps_d;
-                    }
-
-                    if (dis < mind) {
-                        bf = *ii;
-                        mind = dis;
-                    }
-                }
-
-                if (mind != std::numeric_limits<double>::infinity())
-                    return true;
-                break;
-            }
-
-            case Point::EDGE: {
-
-                auto e = (Edge *)dest.p;
-                for (auto &itv : edge_intervals[e])
-                    if ((itv->st / e->length() >= dest.ratio)
-                        and (itv->end / e->length() <= dest.ratio)) {
-                        bf = *itv;
-                        return true;
-                    }
-                break;
-            }
-
-            default:
-                assert(false);
-        }
-
-        return false;
-    }
-
     void algorithm()
     {
         initialize();
-        while (not intervals_heap.empty() and not terminate()) {
+        while (not intervals_heap.empty() and not not_reached.empty()) {
             propagate();
         }
-    }
-
-    bool terminate()
-    {
-        // Interval ii;
-        // for (auto &dest : destinations)
-        //     if (not best_first_interval(dest, ii))
-        //         return false;
-        // return true;
-        return false;
     }
 
     // invariants

@@ -5,3 +5,5 @@
 - convert non-tri to tri mesh, repeated vert/edges removal
 - is `edge_intervals` handled correctly?
 - certain intervals (saddle point waale) not in heap?
+- face for best_first_interval
+- implement simple djikstras?
