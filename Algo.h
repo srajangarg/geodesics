@@ -45,7 +45,7 @@ public:
 
     Info get_info_edge(Vector2 src, Edge *e, Face *face) const
     {
-        Vertex *v = e->getCommonVertex(*edge);
+        Vertex *v = e->getCommonVertex(edge);
         assert(v != NULL);
 
         Info i;
@@ -238,16 +238,33 @@ public:
     {
         vector<Point> path;
         assert(best_interval_dest[destination] != NULL);
+        path.push_back(destination);
 
-        
-        // assert(destination.ptype != Point::UNDEFINED);
+        auto cur_itv = best_interval_dest[destination];
+        auto cur_x = cur_itv->edge->length() * destination.ratio;
 
-        // path.push_back(destination);
+        while (cur_itv->parent != NULL)
+        {
+            if ((Vector2(cur_x, 0) - cur_itv->pos).length() > EPS)
+            {   
+                auto cur_e = cur_itv->edge, par_e = cur_itv->parent->edge;
+                auto common = cur_e->getCommonVertex(par_e);
+                assert(common != NULL);
+                auto theta = cur_itv->from->getAngle(common);
 
-        // Interval best_interval = best_first_interval(destination, path);
+                auto e = cur_e->length();
+                auto x = cur_itv->pos.x(), y = cur_itv->pos.y();
+                auto new_x = (y*(e-cur_x))/(sin(theta)*(x-cur_x) + cos(theta)*y);
 
-        // from the given destination and best_interval, find the next intervals and point
-        // accordingly
+                if (common == par_e->getEndpoint(1))
+                    new_x = par_e->length() - new_x;
+                assert(new_x >= 0 and new_x <= par_e->length());
+
+                path.push_back(Point(par_e, new_x/par_e->length()));
+                cur_x = new_x;
+                cur_itv = cur_itv->parent;
+            }
+        }
 
         return path;
     }
@@ -449,6 +466,7 @@ public:
             if (keep_old_itv) {
                 intervals.push_back(keep_old_itv);
                 not_to_delete.insert(keep_old_itv);
+                intervals_heap.insert(keep_old_itv);
             } else {
                 auto added_intv = new Interval(interval);
                 auto pp = intervals_heap.insert(added_intv);
@@ -532,18 +550,18 @@ public:
         switch (source.ptype) {
             case Point::VERTEX: {
                 for (auto &e : visible) {
-                    Interval ii(0, 0, 0, e->length(), 0, NULL, e, NULL,
+                    auto ii = new Interval(0, 0, 0, e->length(), 0, NULL, e, NULL,
                                 (source.p == e->getEndpoint(1)));
-                    insert_new_interval(ii);
+                    insert_new_interval(*ii);
                 }
                 break;
             }
 
             case Point::EDGE: {
                 auto e = (Edge *)source.p;
-                Interval ii(source.ratio * e->length(), 0, 0, e->length(), 0, NULL, e,
+                auto ii = new Interval(source.ratio * e->length(), 0, 0, e->length(), 0, NULL, e,
                             NULL, false);
-                insert_new_interval(ii);
+                insert_new_interval(*ii);
                 break;
             }
 
@@ -554,9 +572,9 @@ public:
                     double x = (source.pos - pos1).dot((pos2 - pos1).unit());
                     double y = sqrt((source.pos - pos1).squaredLength() - x * x);
 
-                    Interval ii(x, y, 0, e->length(), 0, (Face *)(source.p), e, NULL,
+                    auto ii = new Interval(x, y, 0, e->length(), 0, (Face *)(source.p), e, NULL,
                                 false);
-                    insert_new_interval(ii);
+                    insert_new_interval(*ii);
                 }
                 break;
             }

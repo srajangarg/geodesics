@@ -7,3 +7,4 @@
 - certain intervals (saddle point waale) not in heap?
 - face for best_first_interval
 - implement simple djikstras?
+- all intervals must be dynamicaaly allocated
