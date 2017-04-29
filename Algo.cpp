@@ -80,8 +80,8 @@ bool Interval::operator<(const Interval &rhs) const
 
 bool Interval::operator==(const Interval &rhs) const
 {
-    return (abs(st - rhs.st) < EPS and abs(end - rhs.end) < EPS and edge == rhs.edge
-            and from == rhs.from);
+    return (edge == rhs.edge and abs(st - rhs.st) < EPS and abs(end - rhs.end) < EPS
+            and abs(ps_d - rhs.ps_d) < EPS and (pos - rhs.pos).length() < EPS);
 }
 
 void Interval::set_st_end_pos(double st_, double end_, bool invert)

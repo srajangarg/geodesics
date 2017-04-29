@@ -46,7 +46,7 @@ public:
         Vertex *v0 = e->getEndpoint(0);
         Vertex *v1 = e->getEndpoint(1);
 
-        pos = (1 - rat) * v0->getPosition() +  rat * v1->getPosition();
+        pos = (1 - rat) * v0->getPosition() + rat * v1->getPosition();
         ptype = EDGE;
     }
 

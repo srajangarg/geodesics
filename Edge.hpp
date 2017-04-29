@@ -103,7 +103,7 @@ public:
                 || endpoints[1] == other.endpoints[0]);
     }
 
-    Vertex *getCommonVertex(Edge* other) const
+    Vertex *getCommonVertex(Edge *other) const
     {
         if (endpoints[0] == other->endpoints[0] or endpoints[0] == other->endpoints[1])
             return endpoints[0];

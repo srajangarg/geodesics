@@ -243,10 +243,8 @@ public:
         auto cur_itv = best_interval_dest[destination];
         auto cur_x = cur_itv->edge->length() * destination.ratio;
 
-        while (cur_itv->parent != NULL)
-        {
-            if ((Vector2(cur_x, 0) - cur_itv->pos).length() > EPS)
-            {   
+        while (cur_itv->parent != NULL) {
+            if ((Vector2(cur_x, 0) - cur_itv->pos).length() > EPS) {
                 auto cur_e = cur_itv->edge, par_e = cur_itv->parent->edge;
                 auto common = cur_e->getCommonVertex(par_e);
                 assert(common != NULL);
@@ -254,13 +252,14 @@ public:
 
                 auto e = cur_e->length();
                 auto x = cur_itv->pos.x(), y = cur_itv->pos.y();
-                auto new_x = (y*(e-cur_x))/(sin(theta)*(x-cur_x) + cos(theta)*y);
+                auto new_x
+                    = (y * (e - cur_x)) / (sin(theta) * (x - cur_x) + cos(theta) * y);
 
                 if (common == par_e->getEndpoint(1))
                     new_x = par_e->length() - new_x;
                 assert(new_x >= 0 and new_x <= par_e->length());
 
-                path.push_back(Point(par_e, new_x/par_e->length()));
+                path.push_back(Point(par_e, new_x / par_e->length()));
                 cur_x = new_x;
                 cur_itv = cur_itv->parent;
             }
@@ -551,7 +550,7 @@ public:
             case Point::VERTEX: {
                 for (auto &e : visible) {
                     auto ii = new Interval(0, 0, 0, e->length(), 0, NULL, e, NULL,
-                                (source.p == e->getEndpoint(1)));
+                                           (source.p == e->getEndpoint(1)));
                     insert_new_interval(*ii);
                 }
                 break;
@@ -559,8 +558,8 @@ public:
 
             case Point::EDGE: {
                 auto e = (Edge *)source.p;
-                auto ii = new Interval(source.ratio * e->length(), 0, 0, e->length(), 0, NULL, e,
-                            NULL, false);
+                auto ii = new Interval(source.ratio * e->length(), 0, 0, e->length(), 0,
+                                       NULL, e, NULL, false);
                 insert_new_interval(*ii);
                 break;
             }
@@ -572,8 +571,8 @@ public:
                     double x = (source.pos - pos1).dot((pos2 - pos1).unit());
                     double y = sqrt((source.pos - pos1).squaredLength() - x * x);
 
-                    auto ii = new Interval(x, y, 0, e->length(), 0, (Face *)(source.p), e, NULL,
-                                false);
+                    auto ii = new Interval(x, y, 0, e->length(), 0, (Face *)(source.p), e,
+                                           NULL, false);
                     insert_new_interval(*ii);
                 }
                 break;
