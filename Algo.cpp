@@ -91,6 +91,8 @@ void Interval::set_st_end_pos(double st_, double end_, bool invert)
     }
 
     assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
+    if (parent != NULL)
+        assert(edge->getCommonVertex(parent->edge) != NULL);
 }
 
 ostream &operator<<(ostream &os, const Interval &e)

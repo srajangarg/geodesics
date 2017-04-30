@@ -336,7 +336,7 @@ public:
                 x = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
         }
 
-        cout<<"a "<<a<<" b "<<b<<" c "<<c<<endl;
+        // cout<<"a "<<a<<" b "<<b<<" c "<<c<<endl;
         if (equidist_pt and x > st and x < end) {
             // [st, x] closer to ps1 or ps2?
             auto i1val = ((ps1 - st_v).length() + i1.ps_d);
@@ -466,13 +466,13 @@ public:
                 new_w_short.end = w->st;
                 new_intervals.push_back(new_w_short);
 
-                cout<<"source bisect- ----"<<endl;
-                cout<<w->st<<" "<<w->end<<endl;
-                cout<<"i1 : "<<new_w<<endl;
-                cout<<"i2 : "<<(*w)<<endl;
-                for (auto &interval : source_bisect(w->st, w->end, new_w, *w))
-                    cout<<interval<<endl, new_intervals.push_back(interval);
-                cout<<"----"<<endl;
+                // cout<<"source bisect- ----"<<endl;
+                // cout<<w->st<<" "<<w->end<<endl;
+                // cout<<"i1 : "<<new_w<<endl;
+                // cout<<"i2 : "<<(*w)<<endl;
+                // for (auto &interval : source_bisect(w->st, w->end, new_w, *w))
+                //     cout<<interval<<endl, new_intervals.push_back(interval);
+                // cout<<"----"<<endl;
 
 
 
