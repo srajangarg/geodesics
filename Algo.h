@@ -149,8 +149,12 @@ public:
 
             cout << "EDGE MAP ---" << endl;
             for (auto &pp : edge_intervals) {
-                if (pp.first->getEndpoint(1)->index != 52 and pp.first->getEndpoint(0)->index != 52)
+                if ((not (pp.first->getEndpoint(0)->index == 33 and pp.first->getEndpoint(1)->index == 52))
+                    and (not (pp.first->getEndpoint(0)->index == 33 and pp.first->getEndpoint(1)->index == 42)))
                     continue;
+
+                // if (not (pp.first->getEndpoint(0)->index == 42 and pp.first->getEndpoint(1)->index == 52))
+                //     continue;
 
                 cout << endl;
                 cout << *(pp.first) << " : " << endl;

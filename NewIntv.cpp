@@ -79,7 +79,8 @@ vector<Interval> MMP::sanitize_and_merge(vector<Interval> &intervals)
         if (w.end - w.st > EPS) {
             // check if last merged interval and w have same pos and everything
             if ((last_merged_interval.pos - w.pos).length() < EPS
-                and abs(last_merged_interval.ps_d - w.ps_d) < EPS) {
+                and abs(last_merged_interval.ps_d - w.ps_d) < EPS 
+                and last_merged_interval.from == w.from) {
                 // merge last_merge_interval and w
                 last_merged_interval.end = w.end;
                 last_merged_interval.recompute_min_d();

@@ -28,6 +28,7 @@ void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
     // }
 
     // auto v = ed->getEndpoint(endpoint);
+    assert(v->saddle_or_boundary);
     double best_x;
     double mind = std::numeric_limits<double>::infinity();
     cout<<"bfsd"<<endl;
@@ -38,33 +39,50 @@ void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
         double temp_x;
         double dis;
 
+        // if (f->hasIncidentEdge(e))
+        //     continue;
+
         if(e == cur_itv.edge)
             continue;
 
         if (edge_intervals[e].empty())
             continue;
 
+        double end;
         if (v == e->getEndpoint(0)) {
             ii = edge_intervals[e].front();
             if (ii.st > EPS)
                 continue;
+            end = ii.st;
             dis = ii.pos.length() + ii.ps_d;
             temp_x = 0.0;
         } else {
             ii = edge_intervals[e].back();
+            end = 1;
             cout<<ii<<endl;
             if (e->length() - ii.end > EPS)
                 continue;
+            end = ii.end;
             dis = (ii.pos - Vector2(e->length(), 0)).length() + ii.ps_d;
             temp_x = e->length();
         }
 
-        if (dis < mind) {
+        if (ii.from == cur_itv.from)
+            continue;
+
+        // printf("dis : %.9f\n",dis);
+        // cout<<"int : "<<ii<<endl;
+
+
+
+        if (dis < mind or (abs(dis - mind) < EPS and (ii.pos.length() - end > EPS))) {
             bf = ii;
             best_x = temp_x;
             mind = dis;
         }
     }
+
+    cout<<"final : "<<best_x<<endl;
 
     assert(mind != std::numeric_limits<double>::infinity());
     cur_x = best_x;
@@ -220,7 +238,9 @@ vector<Point> MMP::trace_back(Point destination)
                     new_x = max(0.0, min(par_e->length(), new_x));
 
                     path.push_back(Point(par_e, new_x / par_e->length()));
+                    cout<<"Path : "<<Point(par_e, new_x / par_e->length()).pos<<endl;
                     cout<<"par_e : "<<*par_e<<endl;
+                    auto t_itv = cur_itv;
                     if(abs(new_x) < EPS)
                         cur_itv = edge_intervals[par_e].front();
                     else if(abs(new_x - par_e->length()) < EPS)
@@ -228,12 +248,15 @@ vector<Point> MMP::trace_back(Point destination)
                     else
                     {
                         for (auto & ii : edge_intervals[par_e])
-                            if (ii.st <= new_x and new_x <= ii.end/* and ii.from != cur_itv.from*/)
+                            if (ii.st <= new_x and new_x <= ii.end and ii.from != cur_itv.from)
                             {
                                 cout<<"new_itv found"<<endl;
                                 cur_itv = ii;
                             }
                     }
+
+                    if (cur_itv == t_itv)
+                        assert(false);
 
                     cout<<"new_itv : "<<cur_itv<<endl;
 
