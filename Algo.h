@@ -80,12 +80,15 @@ public:
 
     MMP(Mesh *m, Point s, const vector<Point> &dests) : mesh(m), source(s)
     {
+        assert(s.ptype != Point::UNDEFINED);
         not_reached.insert(dests.begin(), dests.end());
     }
 
     vector<Interval> prop_thru_interval(Vector2 src, Interval &w, Face *face, double ps_d);
 
     void update_not_reached(list<Interval>::iterator &w);
+
+    void best_first_saddle(Edge* e, double & cur_x, Interval & cur_itv, int endpoint);
 
     void propagate();
 
@@ -115,7 +118,7 @@ public:
 
     void initialize();
 
-    void algorithm()
+    vector<Point> algorithm()
     {
         initialize();
         // int x;
@@ -153,9 +156,7 @@ public:
             // cin>>x;
         }
 
-        auto pp = trace_back(best_interval_dest.begin()->first);
-        for (auto &itv : pp)
-            cout<<itv<<endl;
+        return trace_back(best_interval_dest.begin()->first);
     }
 
     // invariants

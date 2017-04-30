@@ -6,10 +6,12 @@
 #include "DGP/Camera.hpp"
 #include "DGP/Matrix3.hpp"
 #include "DGP/Graphics/RenderSystem.hpp"
+using namespace std;
 
 // Forward declaration
 class Mesh;
 class Vertex;
+class Point;
 
 /* Displays an object using OpenGL and GLUT. */
 class Viewer
@@ -29,11 +31,12 @@ private:
     static bool show_bbox;
     static bool show_edges;
     static Vertex const *highlighted_vertex;
+    static vector<Point> path;
 
 public:
     /** Set the object to be displayed. The object must persist as long as the
      * viewer does. */
-    static void setObject(Mesh *o);
+    static void setObject(Mesh *o, const vector<Point> &p);
 
     /**
      * Call this function to launch the viewer. It will not return under normal

@@ -243,6 +243,10 @@ public:
     bool saddle_or_boundary;
     float normal_normalization_factor;
 
+    double dis;
+    Vertex* par;
+    bool visited;
+
     friend ostream &operator<<(ostream &os, const Vertex &e);
 }; // class Edge
 

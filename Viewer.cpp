@@ -1,5 +1,6 @@
 #include "Viewer.hpp"
 #include "Mesh.hpp"
+#include "Point.hpp"
 #include "DGP/Graphics/RenderSystem.hpp"
 #include "DGP/Graphics/Shader.hpp"
 
@@ -23,11 +24,13 @@ int Viewer::drag_start_x = -1;
 int Viewer::drag_start_y = -1;
 bool Viewer::show_bbox = false;
 bool Viewer::show_edges = false;
+vector<Point> Viewer::path = {};
 Vertex const *Viewer::highlighted_vertex = NULL;
 
-void Viewer::setObject(Mesh *o)
+void Viewer::setObject(Mesh *o, const vector<Point> &p)
 {
     mesh = o;
+    path = p;
 }
 
 void Viewer::launch(int argc, char *argv[])
@@ -186,15 +189,18 @@ void Viewer::draw()
             drawOutlineBox(mesh->getAABB());
         }
 
-        if (highlighted_vertex) {
-            render_system->setShader(NULL);
-            render_system->setColor(ColorRGB(1, 0, 0));
-            render_system->setPointSize(10);
 
-            render_system->beginPrimitive(Graphics::RenderSystem::Primitive::POINTS);
-            render_system->sendVertex(highlighted_vertex->getPosition());
-            render_system->endPrimitive();
-        }
+        ////////////////////
+        glLineWidth(2.5);
+        render_system->setShader(NULL);
+        render_system->setColor(ColorRGB(1, 0, 0));
+        render_system->setPointSize(10);
+
+        render_system->beginPrimitive(Graphics::RenderSystem::Primitive::LINE_STRIP);
+        for (auto &p: path)
+            render_system->sendVertex(p.pos);
+        render_system->endPrimitive();
+        ////////////////////
 
         render_system->popShader();
 
