@@ -210,6 +210,12 @@ class DGP_API Quat
      */
     void toAxisAngleRotation(Vector3 & axis, double & angle) const;
 
+    void toAxisAngleRotation(Vector3 & axis, Real & angle) const
+    {
+      double d;
+      toAxisAngleRotation(axis, d);
+      angle = (Real)d;
+    }
     /** Convert the quaternion to a rotation matrix. */
     Matrix3 toRotationMatrix() const;
 

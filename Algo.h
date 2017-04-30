@@ -277,7 +277,8 @@ public:
 
             if ((Vector2(cur_x, 0) - cur_itv->pos).length() > EPS) {
                 auto cur_e = cur_itv->edge, par_e = cur_itv->parent->edge;
-                auto x = cur_itv->pos.x(), y = cur_itv->pos.y(), e = cur_e->length();
+                auto x = cur_itv->pos.x(), y = cur_itv->pos.y();
+                auto e = cur_e->length();
                 
                 auto common = cur_e->getCommonVertex(par_e);
                 assert(common != NULL);
@@ -324,24 +325,22 @@ public:
         double c = 0.25 * gamma * gamma - ps2.squaredLength() * beta * beta;
         bool equidist_pt = true;
 
-        if (b * b - 4 * a * c < 0 or (a == 0.0 and b == 0.0 and abs(c) < EPS))
+        if ((b * b - 4 * a * c < 0) or (abs(b) < EPS and abs(c) < EPS))
             equidist_pt = false;
         else if (abs(a) < EPS)
             x = -c / b;
         else
+        {
             x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
+            if (x <= st or x >= end)
+                x = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
+        }
 
+        cout<<"a "<<a<<" b "<<b<<" c "<<c<<endl;
         if (equidist_pt and x > st and x < end) {
             // [st, x] closer to ps1 or ps2?
-
             auto i1val = ((ps1 - st_v).length() + i1.ps_d);
             auto i2val = ((ps2 - st_v).length() + i2.ps_d);
-
-            if (abs(i1val - i2val) < EPS)
-            {
-                i1val = ((ps1 - Vector2(x, 0)).length() + i1.ps_d);
-                i2val = ((ps2 - Vector2(x, 0)).length() + i2.ps_d);
-            }
 
             if (i1val < i2val) {
                 b_intervals.push_back(Interval(ps1, st, x, i1));
@@ -352,9 +351,6 @@ public:
             }
         } else {
             // the complete interval is near to one single source
-            cout<<"i1 val : "<<((ps1 - st_v).length() + i1.ps_d)<<endl;
-            cout<<"i2 val : "<<((ps2 - st_v).length() + i2.ps_d)<<endl;
-
             auto i1val = ((ps1 - st_v).length() + i1.ps_d);
             auto i2val = ((ps2 - st_v).length() + i2.ps_d);
 

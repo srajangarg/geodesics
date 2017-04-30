@@ -30,7 +30,7 @@ typedef  std::uint64_t       uint64;
 
 using    std::               size_t;
 
-typedef  double               Real;
+typedef  float               Real;
 typedef  float               float32;  // assume IEEE 754
 typedef  double              float64;  // assume IEEE 754
 
