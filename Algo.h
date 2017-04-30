@@ -15,7 +15,6 @@ public:
 
     Edge *edge;
     Face *from;
-    Interval *parent;
     bool propagated = false;
 
     Interval()
@@ -25,10 +24,10 @@ public:
     void set_st_end_pos(double st_, double end_, bool invert);
 
     Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
-             Edge *edge_, Interval *par, bool invert = false);
+             Edge *edge_, bool invert = false);
 
     Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *from_,
-             Edge *edge_, Interval *par, bool invert = false);
+             Edge *edge_, bool invert = false);
 
     Interval(Vector2 pos_, double st_, double end_, const Interval &i,
              bool invert = false);
@@ -107,18 +106,18 @@ class MMP
 {
 public:
     Mesh *mesh;
-    unordered_map<Edge *, list<Interval *>> edge_intervals;
+    unordered_map<Edge *, list<Interval>> edge_intervals;
     Point source;
-    map<Point, Interval *> best_interval_dest;
+    map<Point, Interval> best_interval_dest;
     set<Point> not_reached;
 
     struct IntervalPtrComp {
-        bool operator()(const Interval *lhs, const Interval *rhs) const
+        bool operator()(const Interval lhs, const Interval rhs) const
         {
-            return *lhs < *rhs;
+            return lhs < rhs;
         }
     };
-    set<Interval *, IntervalPtrComp> intervals_heap;
+    set<Interval, IntervalPtrComp> intervals_heap;
 
     MMP()
     {
@@ -127,14 +126,14 @@ public:
     MMP(Mesh *m, Point s, Point d) : mesh(m), source(s)
     {
         assert(s.ptype != Point::UNDEFINED);
-        best_interval_dest[d] = NULL;
+        // best_interval_dest[d] = NULL;
         not_reached.insert(d);
     }
 
     MMP(Mesh *m, Point s, const vector<Point> &dests) : mesh(m), source(s)
     {
-        for (auto &d : dests)
-            best_interval_dest[d] = NULL;
+        // for (auto &d : dests)
+        //     best_interval_dest[d] = NULL;
         not_reached.insert(dests.begin(), dests.end());
     }
 
@@ -165,7 +164,7 @@ public:
 
                 new_intervals.push_back(Interval(x, y, info.e1,
                                                  min(info.e2, edge->length()), ps_d, face,
-                                                 edge, &w, invert));
+                                                 edge, invert));
             }
             // otherwise doesn't intersect this edge
         }
@@ -192,7 +191,7 @@ public:
                             continue;
                     }
 
-                    best_interval_dest[*it] = &w;
+                    best_interval_dest[*it] = w;
                     to_erase.push_back(it);
                     break;
                 }
@@ -206,7 +205,7 @@ public:
                     if (w.st / e->length() > it->ratio or w.end / e->length() < it->ratio)
                         continue;
 
-                    best_interval_dest[*it] = &w;
+                    best_interval_dest[*it] = w;
                     to_erase.push_back(it);
                     break;
                 }
@@ -222,25 +221,30 @@ public:
 
     void propagate()
     {
-        Interval *prop_w = *intervals_heap.begin();
-        Edge *prop_e = prop_w->edge;
+        Interval prop_w = *intervals_heap.begin();
+        Edge *prop_e = prop_w.edge;
 
         intervals_heap.erase(intervals_heap.begin());
-        update_not_reached(*prop_w);
+        update_not_reached(prop_w);
+
+        for (auto &pp : edge_intervals[prop_e]) {
+            if (pp == prop_w)
+                pp.propagated = true;
+        }
 
         for (auto &face : prop_e->faces) {
-            if (prop_w->from == face)
+            if (prop_w.from == face)
                 continue;
 
-            cout << "Propagating " << *prop_w << " on " << *face << endl;
-            auto candidates = get_new_intervals(*prop_w, face);
+            cout << "Propagating " << prop_w << " on " << *face << endl;
+            auto candidates = get_new_intervals(prop_w, face);
 
             cout << endl;
             for (auto &new_w : candidates)
                 insert_new_interval(new_w);
         }
 
-        prop_w->propagated = true;
+        // prop_w.propagated = true;
     }
 
     vector<Point> trace_back(Point destination)
@@ -248,7 +252,7 @@ public:
         cout<<"TRACE BACK ------------"<<endl<<endl;
 
         vector<Point> path;
-        assert(best_interval_dest[destination] != NULL);
+        assert(best_interval_dest.find(destination) != best_interval_dest.end());
         path.push_back(destination);
 
         auto cur_itv = best_interval_dest[destination];
@@ -257,50 +261,113 @@ public:
         switch(destination.ptype)
         {
             case Point::VERTEX:
-                if (cur_itv->edge->getEndpoint(0) == destination.p)
+                if (cur_itv.edge->getEndpoint(0) == destination.p)
                     cur_x = 0;
                 else
-                    cur_x = cur_itv->edge->length();
+                    cur_x = cur_itv.edge->length();
                 break;
             case Point::EDGE: 
-                cur_x = cur_itv->edge->length() * destination.ratio;
+                cur_x = cur_itv.edge->length() * destination.ratio;
                 break;
             default:
                 assert(false);
         }
 
-        while (cur_itv->parent != NULL) {
+        // cout<<"cur_x : "<<cur_x<<endl;
+        // cout<<"cur_itv : "<<cur_itv<<endl;
 
-            cout<<"cur_it :"<<*cur_itv<<endl;
-            cout<<"cur_x  :"<<cur_x<<endl;
-            cout<<"par    :"<<(cur_itv->parent)<<endl;
+        //saddle and sources not handled
+        int i = 0;
+        while (i < 2)
+        {
+            cout<<"cur_x : "<<cur_x<<endl;
+            cout<<"cur_itv : "<<cur_itv<<endl;
 
-            if ((Vector2(cur_x, 0) - cur_itv->pos).length() > EPS) {
-                auto cur_e = cur_itv->edge, par_e = cur_itv->parent->edge;
-                auto x = cur_itv->pos.x(), y = cur_itv->pos.y();
-                auto e = cur_e->length();
-                
-                auto common = cur_e->getCommonVertex(par_e);
-                assert(common != NULL);
-                auto theta = cur_itv->from->getAngle(common);
+            for (auto ee : cur_itv.from->edges)
+            {
+                //check whether relative position of src wrt this interval gives a vertex or not 
+                if (ee == cur_itv.edge)
+                    continue;
 
-                if (common == cur_e->getEndpoint(0))
-                    cur_x = e - cur_x, x = e - x;
+                if ((Vector2(cur_x, 0) - cur_itv.pos).length() > EPS) {
+                    auto cur_e = cur_itv.edge, par_e = ee;
+                    auto x = cur_itv.pos.x(), y = cur_itv.pos.y();
+                    auto e = cur_e->length();
+                    
+                    auto common = cur_e->getCommonVertex(par_e);
+                    assert(common != NULL);
+                    auto theta = cur_itv.from->getAngle(common);
 
-                auto new_x
-                    = (y * (e - cur_x)) / (sin(theta) * (x - cur_x) + cos(theta) * y);
+                    if (common == cur_e->getEndpoint(0))
+                        cur_x = e - cur_x, x = e - x;
 
-                if (common == par_e->getEndpoint(1))
-                    new_x = par_e->length() - new_x;
+                    auto new_x
+                        = (y * (e - cur_x)) / (sin(theta) * (x - cur_x) + cos(theta) * y);
 
-                assert(new_x >= -EPS and new_x <= par_e->length() + EPS);
-                new_x = max(0.0, min(par_e->length(), new_x));
+                    if (common == par_e->getEndpoint(1))
+                        new_x = par_e->length() - new_x;
 
-                path.push_back(Point(par_e, new_x / par_e->length()));
-                cur_x = new_x;
-                cur_itv = cur_itv->parent;
+                    if (new_x >= -EPS and new_x <= par_e->length() + EPS)
+                    {
+                        new_x = max(0.0, min(par_e->length(), new_x));
+
+                        path.push_back(Point(par_e, new_x / par_e->length()));
+                        
+                        for (auto & ii : edge_intervals[par_e])
+                            if (ii.st < new_x and new_x < ii.end)
+                                cur_itv = ii;
+
+                        cur_x = new_x;
+                        break;
+                    }
+                    else
+                    {
+                        //revert the changes
+                        if (common == cur_e->getEndpoint(0))
+                            cur_x = e - cur_x;
+                        continue;
+                    }
+
+                    //find which interval new_x belongs to
+
+                }
             }
+            i++;
+
         }
+
+        // while (cur_itv.parent != NULL) {
+
+        //     cout<<"cur_it :"<<*cur_itv<<endl;
+        //     cout<<"cur_x  :"<<cur_x<<endl;
+        //     cout<<"par    :"<<(cur_itv->parent)<<endl;
+
+        //     if ((Vector2(cur_x, 0) - cur_itv->pos).length() > EPS) {
+        //         auto cur_e = cur_itv->edge, par_e = cur_itv->parent->edge;
+        //         auto x = cur_itv->pos.x(), y = cur_itv->pos.y();
+        //         auto e = cur_e->length();
+                
+        //         auto common = cur_e->getCommonVertex(par_e);
+        //         assert(common != NULL);
+        //         auto theta = cur_itv->from->getAngle(common);
+
+        //         if (common == cur_e->getEndpoint(0))
+        //             cur_x = e - cur_x, x = e - x;
+
+        //         auto new_x
+        //             = (y * (e - cur_x)) / (sin(theta) * (x - cur_x) + cos(theta) * y);
+
+        //         if (common == par_e->getEndpoint(1))
+        //             new_x = par_e->length() - new_x;
+
+        //         assert(new_x >= -EPS and new_x <= par_e->length() + EPS);
+        //         new_x = max(0.0, min(par_e->length(), new_x));
+
+        //         path.push_back(Point(par_e, new_x / par_e->length()));
+        //         cur_x = new_x;
+        //         cur_itv = cur_itv->parent;
+        //     }
+        // }
 
         return path;
     }
@@ -422,71 +489,71 @@ public:
             if (new_fully_pushed)
                 break;
 
-            if (w->st >= new_w.end) {
+            if (w.st >= new_w.end) {
                 // ----new----
                 //               -----w-----
                 new_intervals.push_back(new_w);
-                new_intervals.push_back(*w);
+                new_intervals.push_back(w);
                 new_fully_pushed = true;
-            } else if (w->end <= new_w.st) {
+            } else if (w.end <= new_w.st) {
                 //             -----new-----
                 // ----w----
-                new_intervals.push_back(*w);
-            } else if (w->st < new_w.st and w->end <= new_w.end) {
+                new_intervals.push_back(w);
+            } else if (w.st < new_w.st and w.end <= new_w.end) {
                 //       -------new------
                 // ------w--------
 
-                Interval w_short(*w);
+                Interval w_short(w);
                 w_short.end = new_w.st;
 
                 new_intervals.push_back(w_short);
-                for (auto &interval : source_bisect(new_w.st, w->end, *w, new_w))
+                for (auto &interval : source_bisect(new_w.st, w.end, w, new_w))
                     new_intervals.push_back(interval);
 
-                new_w.st = w->end;
-            } else if (w->st >= new_w.st and w->end > new_w.end) {
+                new_w.st = w.end;
+            } else if (w.st >= new_w.st and w.end > new_w.end) {
                 // ------new------
                 //        -----w--------
 
                 Interval new_w_short(new_w);
-                new_w_short.end = w->st;
+                new_w_short.end = w.st;
                 new_intervals.push_back(new_w_short);
-                for (auto &interval : source_bisect(w->st, new_w.end, new_w, *w))
+                for (auto &interval : source_bisect(w.st, new_w.end, new_w, w))
                     new_intervals.push_back(interval);
-                Interval w_short(*w);
+                Interval w_short(w);
                 w_short.st = new_w.end;
                 new_intervals.push_back(w_short);
 
                 new_fully_pushed = true;
-            } else if (w->st >= new_w.st and w->end <= new_w.end) {
+            } else if (w.st >= new_w.st and w.end <= new_w.end) {
                 // --------new----------
                 //      -----w-----
 
                 Interval new_w_short(new_w);
-                new_w_short.end = w->st;
+                new_w_short.end = w.st;
                 new_intervals.push_back(new_w_short);
 
                 // cout<<"source bisect- ----"<<endl;
-                // cout<<w->st<<" "<<w->end<<endl;
+                // cout<<w.st<<" "<<w.end<<endl;
                 // cout<<"i1 : "<<new_w<<endl;
-                // cout<<"i2 : "<<(*w)<<endl;
-                // for (auto &interval : source_bisect(w->st, w->end, new_w, *w))
-                //     cout<<interval<<endl, new_intervals.push_back(interval);
+                // cout<<"i2 : "<<(w)<<endl;
+                for (auto &interval : source_bisect(w.st, w.end, new_w, w))
+                    new_intervals.push_back(interval);
                 // cout<<"----"<<endl;
 
 
 
-                new_w.st = w->end;
-            } else if (w->st < new_w.st and w->end > new_w.end) {
+                new_w.st = w.end;
+            } else if (w.st < new_w.st and w.end > new_w.end) {
                 //     ----new----
                 //  ----------w-------
 
-                Interval w_short1(*w);
+                Interval w_short1(w);
                 w_short1.end = new_w.st;
                 new_intervals.push_back(w_short1);
-                for (auto &interval : source_bisect(new_w.st, new_w.end, new_w, *w))
+                for (auto &interval : source_bisect(new_w.st, new_w.end, new_w, w))
                     new_intervals.push_back(interval);
-                Interval w_short2(*w);
+                Interval w_short2(w);
                 w_short2.st = new_w.end;
                 new_intervals.push_back(w_short2);
                 new_fully_pushed = true;
@@ -502,12 +569,12 @@ public:
         }
 
         for (; it != intervals.end(); it++)
-            new_intervals.push_back(**it);
+            new_intervals.push_back(*it);
 
         for (auto &it : intervals)
             intervals_heap.erase(it);
 
-        set<Interval *> not_to_delete;
+        // set<Interval *> not_to_delete;
         auto old_intervals = intervals;
         intervals.clear();
 
@@ -517,31 +584,31 @@ public:
 
         for (auto &interval : sanitized_new_intervals) {
 
-            Interval *keep_old_itv = NULL;
+            Interval * keep_old_itv = NULL;
             for (auto &old_itv : old_intervals)
-                if (interval == *old_itv)
-                    keep_old_itv = old_itv;
+                if (interval == old_itv)
+                    keep_old_itv = &old_itv;
 
             interval.recompute_min_d();
             cout << interval << endl;
 
             if (keep_old_itv) {
-                intervals.push_back(keep_old_itv);
-                not_to_delete.insert(keep_old_itv);
+                intervals.push_back(*keep_old_itv);
+                // not_to_delete.insert(keep_old_itv);
                 if (not keep_old_itv->propagated)
-                    intervals_heap.insert(keep_old_itv);
+                    intervals_heap.insert(*keep_old_itv);
             } else {
-                auto added_intv = new Interval(interval);
-                auto pp = intervals_heap.insert(added_intv);
+                // auto added_intv = new Interval(interval);
+                auto pp = intervals_heap.insert(interval);
                 assert(pp.second);
-                intervals.push_back(added_intv);
+                intervals.push_back(interval);
             }
         }
         cout << endl;
 
-        for (auto &itv : old_intervals)
-            if (not_to_delete.find(itv) == not_to_delete.end())
-                delete itv;
+        // for (auto &itv : old_intervals)
+        //     if (not_to_delete.find(itv) == not_to_delete.end())
+        //         delete itv;
     }
 
     vector<Interval> get_new_intervals(Interval &w, Face *face)
@@ -613,18 +680,18 @@ public:
         switch (source.ptype) {
             case Point::VERTEX: {
                 for (auto &e : visible) {
-                    auto ii = new Interval(0, 0, 0, e->length(), 0, NULL, e, NULL,
+                    Interval ii (0, 0, 0, e->length(), 0, NULL, e,
                                            (source.p == e->getEndpoint(1)));
-                    insert_new_interval(*ii);
+                    insert_new_interval(ii);
                 }
                 break;
             }
 
             case Point::EDGE: {
                 auto e = (Edge *)source.p;
-                auto ii = new Interval(source.ratio * e->length(), 0, 0, e->length(), 0,
-                                       NULL, e, NULL, false);
-                insert_new_interval(*ii);
+                Interval ii(source.ratio * e->length(), 0, 0, e->length(), 0,
+                                       NULL, e, false);
+                insert_new_interval(ii);
                 break;
             }
 
@@ -635,9 +702,8 @@ public:
                     double x = (source.pos - pos1).dot((pos2 - pos1).unit());
                     double y = sqrt((source.pos - pos1).squaredLength() - x * x);
 
-                    auto ii = new Interval(x, y, 0, e->length(), 0, (Face *)(source.p), e,
-                                           NULL, false);
-                    insert_new_interval(*ii);
+                    Interval ii(x, y, 0, e->length(), 0, (Face *)(source.p), e, false);
+                    insert_new_interval(ii);
                 }
                 break;
             }
@@ -661,12 +727,12 @@ public:
         //     cout << endl;
         //     cout << *(pp.first) << " : " << endl;
         //     for (auto &w : pp.second)
-        //         cout << *w << endl;
+        //         cout << w << endl;
         // }
         // cout << "----" << endl << endl;
         // cin>>x;
 
-        while (not intervals_heap.empty() /*and not not_reached.empty()*/) {
+        while (not intervals_heap.empty() and not not_reached.empty()) {
             propagate();
 
             // cout << "HEAP ---" << endl;
@@ -685,9 +751,9 @@ public:
             // cin>>x;
         }
 
-        // auto pp = trace_back(best_interval_dest.begin()->first);
-        // for (auto &itv : pp)
-        //     cout<<itv<<endl;
+        auto pp = trace_back(best_interval_dest.begin()->first);
+        for (auto &itv : pp)
+            cout<<itv<<endl;
     }
 
     // invariants
