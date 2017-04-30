@@ -244,29 +244,56 @@ public:
     }
 
     vector<Point> trace_back(Point destination)
-    {
+    {   
+        cout<<"TRACE BACK ------------"<<endl<<endl;
+
         vector<Point> path;
         assert(best_interval_dest[destination] != NULL);
         path.push_back(destination);
 
         auto cur_itv = best_interval_dest[destination];
-        auto cur_x = cur_itv->edge->length() * destination.ratio;
+        double cur_x;
+
+        switch(destination.ptype)
+        {
+            case Point::VERTEX:
+                if (cur_itv->edge->getEndpoint(0) == destination.p)
+                    cur_x = 0;
+                else
+                    cur_x = cur_itv->edge->length();
+                break;
+            case Point::EDGE: 
+                cur_x = cur_itv->edge->length() * destination.ratio;
+                break;
+            default:
+                assert(false);
+        }
 
         while (cur_itv->parent != NULL) {
+
+            cout<<"cur_it :"<<*cur_itv<<endl;
+            cout<<"cur_x  :"<<cur_x<<endl;
+            cout<<"par    :"<<(cur_itv->parent)<<endl;
+
             if ((Vector2(cur_x, 0) - cur_itv->pos).length() > EPS) {
                 auto cur_e = cur_itv->edge, par_e = cur_itv->parent->edge;
+                auto x = cur_itv->pos.x(), y = cur_itv->pos.y(), e = cur_e->length();
+                
                 auto common = cur_e->getCommonVertex(par_e);
                 assert(common != NULL);
                 auto theta = cur_itv->from->getAngle(common);
 
-                auto e = cur_e->length();
-                auto x = cur_itv->pos.x(), y = cur_itv->pos.y();
+                if (common == cur_e->getEndpoint(0))
+                    cur_x = e - cur_x, x = e - x;
+
                 auto new_x
                     = (y * (e - cur_x)) / (sin(theta) * (x - cur_x) + cos(theta) * y);
 
                 if (common == par_e->getEndpoint(1))
                     new_x = par_e->length() - new_x;
-                assert(new_x >= 0 and new_x <= par_e->length());
+
+                assert(new_x >= -EPS and new_x <= par_e->length() + EPS);
+                new_x = max(0.0, min(par_e->length(), new_x));
 
                 path.push_back(Point(par_e, new_x / par_e->length()));
                 cur_x = new_x;
@@ -304,9 +331,19 @@ public:
         else
             x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
 
-        if (x > st and x < end and equidist_pt) {
+        if (equidist_pt and x > st and x < end) {
             // [st, x] closer to ps1 or ps2?
-            if ((st_v - ps1).squaredLength() < (st_v - ps2).squaredLength()) {
+
+            auto i1val = ((ps1 - st_v).length() + i1.ps_d);
+            auto i2val = ((ps2 - st_v).length() + i2.ps_d);
+
+            if (abs(i1val - i2val) < EPS)
+            {
+                i1val = ((ps1 - Vector2(x, 0)).length() + i1.ps_d);
+                i2val = ((ps2 - Vector2(x, 0)).length() + i2.ps_d);
+            }
+
+            if (i1val < i2val) {
                 b_intervals.push_back(Interval(ps1, st, x, i1));
                 b_intervals.push_back(Interval(ps2, x, end, i2));
             } else {
@@ -617,40 +654,44 @@ public:
     void algorithm()
     {
         initialize();
-        int x;
-        cout << "HEAP ---" << endl;
-        for (auto &itv : intervals_heap)
-            cout << *itv << endl;
-        cout << "----" << endl << endl;
+        // int x;
+        // cout << "HEAP ---" << endl;
+        // for (auto &itv : intervals_heap)
+        //     cout << *itv << endl;
+        // cout << "----" << endl << endl;
 
-        cout << "EDGE MAP ---" << endl;
-        for (auto &pp : edge_intervals) {
-            cout << endl;
-            cout << *(pp.first) << " : " << endl;
-            for (auto &w : pp.second)
-                cout << *w << endl;
-        }
-        cout << "----" << endl << endl;
+        // cout << "EDGE MAP ---" << endl;
+        // for (auto &pp : edge_intervals) {
+        //     cout << endl;
+        //     cout << *(pp.first) << " : " << endl;
+        //     for (auto &w : pp.second)
+        //         cout << *w << endl;
+        // }
+        // cout << "----" << endl << endl;
         // cin>>x;
 
         while (not intervals_heap.empty() /*and not not_reached.empty()*/) {
             propagate();
 
-            cout << "HEAP ---" << endl;
-            for (auto &itv : intervals_heap)
-                cout << *itv << endl;
-            cout << "----" << endl << endl;
+            // cout << "HEAP ---" << endl;
+            // for (auto &itv : intervals_heap)
+            //     cout << *itv << endl;
+            // cout << "----" << endl << endl;
 
-            cout << "EDGE MAP ---" << endl;
-            for (auto &pp : edge_intervals) {
-                cout << endl;
-                cout << *(pp.first) << " : " << endl;
-                for (auto &w : pp.second)
-                    cout << *w << endl;
-            }
-            cout << "----" << endl << endl;
+            // cout << "EDGE MAP ---" << endl;
+            // for (auto &pp : edge_intervals) {
+            //     cout << endl;
+            //     cout << *(pp.first) << " : " << endl;
+            //     for (auto &w : pp.second)
+            //         cout << *w << endl;
+            // }
+            // cout << "----" << endl << endl;
             // cin>>x;
         }
+
+        // auto pp = trace_back(best_interval_dest.begin()->first);
+        // for (auto &itv : pp)
+        //     cout<<itv<<endl;
     }
 
     // invariants

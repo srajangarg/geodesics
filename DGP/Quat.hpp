@@ -210,17 +210,6 @@ class DGP_API Quat
      */
     void toAxisAngleRotation(Vector3 & axis, double & angle) const;
 
-    /**
-     * Returns the axis and angle of rotation represented by this quaternion, inverting the map q = [sin(angle/2)*axis,
-     * cos(angle/2)])
-     */
-    void toAxisAngleRotation(Vector3 & axis, Real & angle) const
-    {
-      double d;
-      toAxisAngleRotation(axis, d);
-      angle = (Real)d;
-    }
-
     /** Convert the quaternion to a rotation matrix. */
     Matrix3 toRotationMatrix() const;
 

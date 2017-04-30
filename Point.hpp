@@ -89,6 +89,15 @@ public:
         }
         return visible;
     }
+
+    friend ostream &operator<<(ostream &os, const Point &e)
+    {
+        if (e.ptype == VERTEX)
+            os<<"P("<<*((Vertex*)e.p)<<")";
+        else
+            os<<"P("<<*((Edge*)e.p)<<", "<<e.ratio<<")";
+        return os;
+    }
 };
 
 #endif

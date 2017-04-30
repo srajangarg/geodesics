@@ -9,8 +9,6 @@ Interval::Interval(double x_, double y_, double st_, double end_, double ps_d_,
     pos = Vector2(x_, y_);
     parent = par;
     set_st_end_pos(st_, end_, invert);
-
-    assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
     // INVARIANT - st is always close to lower endpoint than higher endpoint pointer
     recompute_min_d();
 }
@@ -24,8 +22,6 @@ Interval::Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *fr
     parent = par;
     ps_d = ps_d_;
     set_st_end_pos(st_, end_, invert);
-
-    assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
     recompute_min_d();
 }
 
@@ -35,10 +31,8 @@ Interval::Interval(Vector2 pos_, double st_, double end_, const Interval &i, boo
     from = i.from;
     ps_d = i.ps_d;
     pos = pos_;
-    parent = const_cast<Interval *>(&i);
+    parent = const_cast<Interval *>(i.parent);
     set_st_end_pos(st_, end_, invert);
-
-    assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
     recompute_min_d();
 }
 
@@ -95,6 +89,8 @@ void Interval::set_st_end_pos(double st_, double end_, bool invert)
         end = end_;
         pos = Vector2(pos.x(), pos.y());
     }
+
+    assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
 }
 
 ostream &operator<<(ostream &os, const Interval &e)

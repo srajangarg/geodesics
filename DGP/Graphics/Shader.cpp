@@ -378,13 +378,13 @@ Shader::setUniform(char const * uniform_name, int value)
 void
 Shader::setUniform(char const * uniform_name, ColorL const & value)
 {
-  setUniform(uniform_name, value.value());
+  setUniform(uniform_name, (float)value.value());
 }
 
 void
 Shader::setUniform(char const * uniform_name, ColorL8 const & value)
 {
-  setUniform(uniform_name, ColorL(value).value());
+  setUniform(uniform_name, (float)ColorL(value).value());
 }
 
 void
