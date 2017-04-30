@@ -3,9 +3,3 @@
 - viewer animation etc.
 - recompute_min_d
 - convert non-tri to tri mesh, repeated vert/edges removal
-- is `edge_intervals` handled correctly?
-- certain intervals (saddle point waale) not in heap?
-- face for best_first_interval
-- implement simple djikstras?
-- all intervals must be dynamicaaly allocated
-- multiset instead of set?

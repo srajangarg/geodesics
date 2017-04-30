@@ -3,6 +3,7 @@
 #include "Edge.hpp"
 #include "Face.hpp"
 #include "DGP/FilePath.hpp"
+#include "DGP/Polygon3.hpp"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -112,12 +113,17 @@ bool Mesh::loadOFF(std::string const &path)
 
     std::vector<Vertex *> face_vertices;
     long num_face_vertices, vertex_index;
+    bool triangular = true;
+
     for (long i = 0; i < nf; ++i) {
         if (!(in >> num_face_vertices) || num_face_vertices < 0) {
             DGP_ERROR << "Could not read valid vertex count of face " << faces.size()
                       << " from '" << path << '\'';
             return false;
         }
+
+        if (num_face_vertices != 3)
+          triangular = false;
 
         face_vertices.resize(num_face_vertices);
         for (size_t j = 0; j < face_vertices.size(); ++j) {
@@ -146,7 +152,7 @@ bool Mesh::loadOFF(std::string const &path)
 
     setName(FilePath::objectName(path));
 
-    return true;
+    return triangular;
 }
 
 bool Mesh::saveOFF(std::string const &path) const
@@ -197,6 +203,48 @@ bool Mesh::load(std::string const &path)
         status = loadOFF(path);
     else {
         DGP_ERROR << "Unsupported mesh format: " << path;
+    }
+
+    if (not status)
+    {
+      vector<vector<Face>::iterator> to_erase;
+      vector<Face> new_faces;
+
+      for (auto fi = faces.begin(); fi != faces.end(); ++fi) {
+
+        if (fi->vertices.size() == 3) 
+        {
+            new_faces.push_back(*fi);
+            continue;
+        }
+        
+        to_erase.push_back(fi);
+        vector<Vertex*> vv;
+        Polygon3 p;
+        
+        for (auto fvi = fi->vertices.begin(); fvi != fi->vertices.end(); fvi++)
+        {
+          p.addVertex((*fvi)->getPosition());
+          vv.push_back(*fvi);
+
+        }
+
+        std::vector<long> tri_indx;
+        p.triangulate(tri_indx);
+
+        for (int i = 0; i < tri_indx.size(); i += 3)
+        {
+            Face f;
+            f.addVertex(vv[tri_indx[i]]);
+            f.addVertex(vv[tri_indx[i+1]]);
+            f.addVertex(vv[tri_indx[i+2]]);
+            new_faces.push_back(f);
+        }
+      }
+
+      cout << "Saving new triangular mesh!" << endl;
+      faces.swap(new_faces);
+      saveOFF(path.substr(0, path.find_last_of(".")) + "_tri.off");
     }
 
     return status;
