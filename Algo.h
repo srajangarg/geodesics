@@ -92,6 +92,8 @@ public:
 
     void propagate();
 
+    void best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv);
+
     vector<Point> trace_back(Point destination);
 
     vector<Interval> source_bisect(double st, double end, const Interval &i1,
@@ -145,14 +147,17 @@ public:
             //     cout << *itv << endl;
             // cout << "----" << endl << endl;
 
-            // cout << "EDGE MAP ---" << endl;
-            // for (auto &pp : edge_intervals) {
-            //     cout << endl;
-            //     cout << *(pp.first) << " : " << endl;
-            //     for (auto &w : pp.second)
-            //         cout << *w << endl;
-            // }
-            // cout << "----" << endl << endl;
+            cout << "EDGE MAP ---" << endl;
+            for (auto &pp : edge_intervals) {
+                if (pp.first->getEndpoint(1)->index != 52 and pp.first->getEndpoint(0)->index != 52)
+                    continue;
+
+                cout << endl;
+                cout << *(pp.first) << " : " << endl;
+                for (auto &w : pp.second)
+                    cout << w << endl;
+            }
+            cout << "----" << endl << endl;
             // cin>>x;
         }
 
