@@ -27,7 +27,7 @@ void test(Mesh &mesh)
         cout << endl;
         cout << *(pp.first) << " : " << endl;
         for (auto &w : pp.second)
-            cout << *w << endl;
+            cout << w << endl;
     }
     cout << endl;
 
