@@ -89,6 +89,8 @@ public:
 
     void propagate();
 
+    void best_first_saddle(Edge* e, double & cur_x, Interval & cur_itv, int endpoint);
+
     vector<Point> trace_back(Point destination);
 
     vector<Interval> source_bisect(double st, double end, const Interval &i1,
