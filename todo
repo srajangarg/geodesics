@@ -1,5 +1,2 @@
-- mesh cleaning
-- mesh triangulation
 - viewer animation etc.
-- recompute_min_d
-- convert non-tri to tri mesh, repeated vert/edges removal
+- repeated vert/edges removal
