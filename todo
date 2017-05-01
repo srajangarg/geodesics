@@ -7,6 +7,20 @@
 	Talk about solution presented by paper, in short, as we have discussed in class
 	Brief description of subroutines and data structures used
 
+	DS:
+
+		a map from an edge to a list of intervals
+		a heap (set) consisting of pointers to intervals
+		a map from each destination point to it's best interval (for traceback)
+		a set of unreached destinations
+
+	Subroutines :
+
+		initialize() and mesh_sanity()
+		propagate()
+		insert_new_interval(), source_bisect()
+		get_new_intervals(), prop_thru_interval()
+
 3.
 	
 	Sample run on test meshes /data2
@@ -21,5 +35,5 @@
 
 	Future:
 
-		Approximate answer by merging adjacent windows
 		Storing parent intervals for faster traceback
+		Approximate answer by merging adjacent windows
