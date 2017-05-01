@@ -206,11 +206,20 @@ void Viewer::draw()
         render_system->endPrimitive();
         ////////////////////
         glLineWidth(2.5);
+
+        render_system->setShader(NULL);
+        render_system->setColor(ColorRGB(0, 0, 1));
+        render_system->setPointSize(10);
+
+        render_system->beginPrimitive(Graphics::RenderSystem::Primitive::POINTS);
+        render_system->sendVertex(Vector3(-4.58013, -1.54165, 5));
+        render_system->sendVertex(Vector3(-4, -1, 5));
+        render_system->sendVertex(Vector3(-0.5, 1, 5.875));
+        render_system->endPrimitive();
+
         render_system->setShader(NULL);
         render_system->setColor(ColorRGB(0, 1, 0));
         render_system->setPointSize(10);
-
-
 
         render_system->beginPrimitive(Graphics::RenderSystem::Primitive::LINE_STRIP);
         for (auto &p: path2)

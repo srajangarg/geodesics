@@ -2,7 +2,7 @@
 
 void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
 {   
-    assert(v->saddle_or_boundary);
+    // assert(v->saddle_or_boundary);
     double best_x;
     double mind = std::numeric_limits<double>::infinity();
     cout<<"bfsd"<<endl;
@@ -112,6 +112,10 @@ vector<Point> MMP::trace_back(Point destination)
         cout<<"cur_x : "<<cur_x<<endl;
         cout<<"cur_itv : "<<cur_itv<<endl;
 
+        path.push_back(Point(cur_itv.edge, cur_x / cur_itv.edge->length()));
+        cout<<"Path : "<<Point(cur_itv.edge, cur_x / cur_itv.edge->length()).pos<<endl;
+
+
         //check whether cur_x and cur_itv are close to source or saddle
         if ((abs(cur_x) < EPS and source.p == cur_itv.edge->getEndpoint(0)) or 
             (abs(cur_x - cur_itv.edge->length()) < EPS and source.p == cur_itv.edge->getEndpoint(1)) or 
@@ -144,12 +148,14 @@ vector<Point> MMP::trace_back(Point destination)
             continue;
         }
 
+        // path.push_back(Point(cur_itv.edge, cur_x / cur_itv.edge->length()));
 
 
         //figure out which edge to propogate
         double angle1 = atan2(cur_itv.pos.y(), cur_itv.pos.x() - cur_x);
         double angle2;
         int endpoint;
+        Vertex * opp_vertex;
 
         if (cur_itv.pos.y() < EPS)
         {
@@ -160,8 +166,6 @@ vector<Point> MMP::trace_back(Point destination)
         }
         else
         {
-            cout<<"a1 : "<<angle1<<endl;
-            cout<<"a2 : "<<angle2<<endl;
             //next interval propogates through this
             //calculate angle2 = angle 
             for (auto ee : cur_itv.from->edges)
@@ -171,12 +175,16 @@ vector<Point> MMP::trace_back(Point destination)
 
                 if (cur_itv.edge->getCommonVertex(ee) == cur_itv.edge->getEndpoint(0))
                 {
+                    opp_vertex = ee->getOtherEndpoint(cur_itv.edge->getEndpoint(0));
                     double theta = cur_itv.from->getAngle(cur_itv.edge->getEndpoint(0));
                     double x = ee->length()*cos(theta);
                     double y = ee->length()*sin(theta);
                     angle2 = atan2(y, x - cur_x);
+                    break;
                 }
             }
+            cout<<"a1 : "<<angle1<<endl;
+            cout<<"a2 : "<<angle2<<endl;
 
             if (angle1 > angle2)
             {
@@ -187,6 +195,13 @@ vector<Point> MMP::trace_back(Point destination)
                 endpoint = 1;
         }
         cout<<"endp : "<<endpoint<<endl;
+
+        if (abs(angle1 - angle2) < EPS)
+        {
+            cout<<"saddle "<<*opp_vertex<<endl;
+            best_first_saddle(opp_vertex, cur_x, cur_itv);
+            continue;
+        }
 
         for (auto ee : cur_itv.from->edges)
         {
@@ -230,8 +245,8 @@ vector<Point> MMP::trace_back(Point destination)
                     cout<<"inside, new_x : "<<new_x<<endl;
                     new_x = max(0.0, min(par_e->length(), new_x));
 
-                    path.push_back(Point(par_e, new_x / par_e->length()));
-                    cout<<"Path : "<<Point(par_e, new_x / par_e->length()).pos<<endl;
+                    // path.push_back(Point(par_e, new_x / par_e->length()));
+                    // cout<<"Path : "<<Point(par_e, new_x / par_e->length()).pos<<endl;
                     cout<<"par_e : "<<*par_e<<endl;
                     auto t_itv = cur_itv;
                     if(abs(new_x) < EPS)

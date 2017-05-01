@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
 
     MMP mmp(&mesh, p, d);
     DJK djk(&mesh, p, d);
-    // cout << "src : vertex " << mesh.vertices.front().index << endl;
-    // cout << "dest : vertex " << mesh.vertices.back().index << endl;
+    cout << "src : vertex " << mesh.vertices.front().index << endl;
+    cout << "dest : vertex " << mesh.vertices.back().index << endl;
     // auto path1 = mmp.algorithm();
     std::vector<Point> path1 = mmp.algorithm();
     auto path2 = djk.algorithm();
