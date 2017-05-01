@@ -30,7 +30,7 @@
 	Challenges:
 
 		Correct updation and insertion of intervals on an edge
-		Corner cases and numerical inaccuracies
+		Corner cases at many places
 		Handling of traceback (without parent interval pointers)
 
 	Future:
