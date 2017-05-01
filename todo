@@ -1,2 +1,25 @@
-- viewer animation etc.
-- repeated vert/edges removal
+1.
+
+	Define problem and refer to paper
+
+2.
+
+	Talk about solution presented by paper, in short, as we have discussed in class
+	Brief description of subroutines and data structures used
+
+3.
+	
+	Sample run on test meshes /data2
+	Comparing djkitras and MMP window propagation path lengths and time taken
+
+4.	
+	Challenges:
+
+		Correct updation and insertion of intervals on an edge
+		Corner cases and numerical inaccuracies
+		Handling of traceback (without parent interval pointers)
+
+	Future:
+
+		Approximate answer by merging adjacent windows
+		Storing parent intervals for faster traceback
