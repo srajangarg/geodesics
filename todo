@@ -30,7 +30,7 @@
 	Challenges:
 
 		Correct updation and insertion of intervals on an edge
-		Corner cases at many places
+		Corner cases at many places (source_bisect pythogoras case, traceback zero angle/same angle case)
 		Handling of traceback (without parent interval pointers)
 
 	Future:
