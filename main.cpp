@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     cout << endl;
     
     Viewer viewer;
-    viewer.setObject(&mesh, path);
+    viewer.setObject(&mesh, path, p);
     viewer.launch(argc, argv);
 
     return 0;

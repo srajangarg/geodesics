@@ -32,11 +32,12 @@ private:
     static bool show_edges;
     static Vertex const *highlighted_vertex;
     static vector<Point> path;
+    static Point dest;
 
 public:
     /** Set the object to be displayed. The object must persist as long as the
      * viewer does. */
-    static void setObject(Mesh *o, const vector<Point> &p);
+    static void setObject(Mesh *o, const vector<Point> &p, Point & d);
 
     /**
      * Call this function to launch the viewer. It will not return under normal

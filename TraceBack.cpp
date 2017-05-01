@@ -120,7 +120,7 @@ vector<Point> MMP::trace_back(Point destination)
     cout<<"cur_itv : "<<cur_itv<<endl;
 
     //saddle and sources not handled
-    // int i = 0;
+    int i = 0;
     while (true)
     {
 
@@ -143,20 +143,20 @@ vector<Point> MMP::trace_back(Point destination)
             cout<<"saddle "<<*cur_itv.edge->getEndpoint(0)<<endl;
             cout<<"finding"<<endl;
             best_first_saddle(cur_itv.edge->getEndpoint(0), cur_x, cur_itv);
-            cout<<"after saddle 1"<<endl;
-            cout<<"cur_sadd : "<<cur_x<<endl;
-            cout<<"cur_itv_sad : "<<cur_itv<<endl;
+            // cout<<"after saddle 1"<<endl;
+            // cout<<"cur_sadd : "<<cur_x<<endl;
+            // cout<<"cur_itv_sad : "<<cur_itv<<endl;
             continue;
         }
         else if((Vector2(cur_x, 0) - cur_itv.pos).length() < EPS and abs(cur_x - cur_itv.edge->length()) < EPS)
         {
             cout<<"saddle "<<*cur_itv.edge->getEndpoint(1)<<endl;
             //get the closest interval from this point
-            cout<<"finding"<<endl;
+            // cout<<"finding"<<endl;
             best_first_saddle(cur_itv.edge->getEndpoint(1), cur_x, cur_itv);
-            cout<<"after saddle 2"<<endl;
-            cout<<"cur_sadd : "<<cur_x<<endl;
-            cout<<"cur_itv_sad : "<<cur_itv<<endl;
+            // cout<<"after saddle 2"<<endl;
+            // cout<<"cur_sadd : "<<cur_x<<endl;
+            // cout<<"cur_itv_sad : "<<cur_itv<<endl;
             continue;
         }
 
@@ -248,7 +248,7 @@ vector<Point> MMP::trace_back(Point destination)
                     else
                     {
                         for (auto & ii : edge_intervals[par_e])
-                            if (ii.st <= new_x and new_x <= ii.end and ii.from != cur_itv.from)
+                            if (ii.st <= new_x and new_x <= ii.end /*and ii.from != cur_itv.from*/)
                             {
                                 cout<<"new_itv found"<<endl;
                                 cur_itv = ii;
@@ -270,7 +270,7 @@ vector<Point> MMP::trace_back(Point destination)
 
             }
         }
-        // i++;
+        i++;
     }
 
     return path;

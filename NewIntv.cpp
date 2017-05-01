@@ -5,6 +5,9 @@ vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
 {
     // takes in  a segment st-end and returns 1or2 interval
     // with the closest source indicated on each interval
+    // cout<<"st : "<<st<<" end : "<<end<<endl;
+    // cout<<"i1 : "<<i1<<endl;
+    // cout<<"i2 : "<<i2<<endl;
     auto ps1 = i1.pos, ps2 = i2.pos;
     Vector2 st_v(st, 0), end_v(end, 0);
     vector<Interval> b_intervals;
@@ -20,22 +23,29 @@ vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
     double c = 0.25 * gamma * gamma - ps2.squaredLength() * beta * beta;
     bool equidist_pt = true;
 
+    // cout<<"a : "<<a<<" b : "<<b<<" c : "<<c<<endl;
+
     if ((b * b - 4 * a * c < 0) or (abs(b) < EPS and abs(c) < EPS))
         equidist_pt = false;
     else if (abs(a) < EPS)
         x = -c / b;
     else
     {
-        x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
-        if (x <= st or x >= end)
+        // x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
+        // if (x <= st or x >= end)
             x = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
     }
 
     // cout<<"a "<<a<<" b "<<b<<" c "<<c<<endl;
+    // cout<<"x : "<<x<<endl;
     if (equidist_pt and x > st and x < end) {
         // [st, x] closer to ps1 or ps2?
         auto i1val = ((ps1 - st_v).length() + i1.ps_d);
         auto i2val = ((ps2 - st_v).length() + i2.ps_d);
+
+        // cout<<"i1val : "<<i1val<<endl;
+        // cout<<"i2val : "<<i2val<<endl;
+
 
         if (i1val < i2val) {
             b_intervals.push_back(Interval(ps1, st, x, i1));
@@ -60,6 +70,12 @@ vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
         else
             b_intervals.push_back(Interval(ps1, st, end, i1));
     }
+
+    // cout<<"final ints : "<<endl;
+    // for (auto ii : b_intervals)
+    //     cout<<ii<<endl;
+
+    // cout<<"done"<<endl;
 
     return b_intervals;
 }

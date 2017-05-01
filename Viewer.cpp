@@ -25,12 +25,14 @@ int Viewer::drag_start_y = -1;
 bool Viewer::show_bbox = false;
 bool Viewer::show_edges = false;
 vector<Point> Viewer::path = {};
+Point Viewer::dest;
 Vertex const *Viewer::highlighted_vertex = NULL;
 
-void Viewer::setObject(Mesh *o, const vector<Point> &p)
+void Viewer::setObject(Mesh *o, const vector<Point> &p, Point & d)
 {
     mesh = o;
     path = p;
+    dest = d;
 }
 
 void Viewer::launch(int argc, char *argv[])
@@ -196,10 +198,24 @@ void Viewer::draw()
         render_system->setColor(ColorRGB(1, 0, 0));
         render_system->setPointSize(10);
 
+
+
         render_system->beginPrimitive(Graphics::RenderSystem::Primitive::LINE_STRIP);
         for (auto &p: path)
             render_system->sendVertex(p.pos);
         render_system->endPrimitive();
+        
+        // render_system->setColor(ColorRGB(0, 1, 0));
+        // render_system->beginPrimitive(Graphics::RenderSystem::Primitive::LINE_STRIP);
+        // render_system->sendVertex(Vector3(-0.087048, 0.259883, 0.028438));
+        // render_system->sendVertex(Vector3(-0.0993528,    0.278107,    0.00261453));
+        // render_system->sendVertex(Vector3(-0.122755, 0.289815,    -0.009728));
+        // render_system->sendVertex(Vector3(-0.122112, 0.344367,    -0.114066));
+        // render_system->endPrimitive();
+
+        // render_system->beginPrimitive(Graphics::RenderSystem::Primitive::POINTS);
+        // render_system->sendVertex(dest.pos);
+        // render_system->endPrimitive();
         ////////////////////
 
         render_system->popShader();
