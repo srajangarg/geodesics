@@ -47,23 +47,23 @@ void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
         // printf("dis : %.9f\n",dis);
         // cout<<"int : "<<ii<<endl;
 
-        if (ii.pos.length() - end < EPS)
-        {
-            continue;
-        }
+        // if (ii.pos.length() - end < EPS)
+        // {
+        //     continue;
+        // }
 
-        if (dis < mind) {
-            bf = ii;
-            best_x = temp_x;
-            mind = dis;
-        }
-
-
-        // if (dis < mind or (abs(dis - mind) < EPS and (ii.pos.length() - end > EPS))) {
+        // if (dis < mind) {
         //     bf = ii;
         //     best_x = temp_x;
         //     mind = dis;
         // }
+
+
+        if (dis < mind or (abs(dis - mind) < EPS and (ii.pos.length() - end > EPS))) {
+            bf = ii;
+            best_x = temp_x;
+            mind = dis;
+        }
     }
 
     cout<<"final : "<<best_x<<endl;
@@ -149,34 +149,43 @@ vector<Point> MMP::trace_back(Point destination)
         //figure out which edge to propogate
         double angle1 = atan2(cur_itv.pos.y(), cur_itv.pos.x() - cur_x);
         double angle2;
-
-        cout<<"a1 : "<<angle1<<endl;
-        cout<<"a2 : "<<angle2<<endl;
         int endpoint;
-        //next interval propogates through this
-        //calculate angle2 = angle 
-        for (auto ee : cur_itv.from->edges)
-        {
-            if (ee == cur_itv.edge)
-                continue;
 
-            if (cur_itv.edge->getCommonVertex(ee) == cur_itv.edge->getEndpoint(0))
-            {
-                double theta = cur_itv.from->getAngle(cur_itv.edge->getEndpoint(0));
-                double x = ee->length()*cos(theta);
-                double y = ee->length()*sin(theta);
-                angle2 = atan2(y, x - cur_x);
-            }
-        }
-
-        if (angle1 > angle2)
+        if (cur_itv.pos.y() < EPS)
         {
-            //propogate it on endpoint-0
-            endpoint = 0;
+            if (cur_itv.pos.x() > cur_x)
+                endpoint = 1;
+            else
+                endpoint = 0;
         }
         else
-            endpoint = 1;
+        {
+            cout<<"a1 : "<<angle1<<endl;
+            cout<<"a2 : "<<angle2<<endl;
+            //next interval propogates through this
+            //calculate angle2 = angle 
+            for (auto ee : cur_itv.from->edges)
+            {
+                if (ee == cur_itv.edge)
+                    continue;
 
+                if (cur_itv.edge->getCommonVertex(ee) == cur_itv.edge->getEndpoint(0))
+                {
+                    double theta = cur_itv.from->getAngle(cur_itv.edge->getEndpoint(0));
+                    double x = ee->length()*cos(theta);
+                    double y = ee->length()*sin(theta);
+                    angle2 = atan2(y, x - cur_x);
+                }
+            }
+
+            if (angle1 > angle2)
+            {
+                //propogate it on endpoint-0
+                endpoint = 0;
+            }
+            else
+                endpoint = 1;
+        }
         cout<<"endp : "<<endpoint<<endl;
 
         for (auto ee : cur_itv.from->edges)
