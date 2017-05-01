@@ -13,7 +13,8 @@ bool Interval::operator<(const Interval &rhs) const
 bool Interval::operator==(const Interval &rhs) const
 {
     return (edge == rhs.edge and abs(st - rhs.st) < EPS and abs(end - rhs.end) < EPS
-            and abs(ps_d - rhs.ps_d) < EPS and (pos - rhs.pos).length() < EPS and from == rhs.from);
+            and abs(ps_d - rhs.ps_d) < EPS and (pos - rhs.pos).length() < EPS
+            and from == rhs.from);
 }
 
 void Interval::set_st_end_pos(double st_, double end_, bool invert)
@@ -95,7 +96,6 @@ Interval::Info Interval::get_info_edge(Vector2 src, Edge *e, Face *face) const
 
     return i;
 }
-
 
 Interval::Interval(double x_, double y_, double st_, double end_, double ps_d_,
                    Face *from_, Edge *edge_, bool invert)

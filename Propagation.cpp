@@ -1,6 +1,7 @@
 #include "Algo.h"
 
-vector<Interval> MMP::prop_thru_interval(Vector2 src, Interval &w, Face *face, double ps_d)
+vector<Interval> MMP::prop_thru_interval(Vector2 src, Interval &w, Face *face,
+                                         double ps_d)
 {
     // face is the face on which the intervals propogate
     // check whether src lies on the interval
@@ -25,9 +26,8 @@ vector<Interval> MMP::prop_thru_interval(Vector2 src, Interval &w, Face *face, d
             if (y < EPS)
                 y = 0;
 
-            new_intervals.push_back(Interval(x, y, info.e1,
-                                             min(info.e2, edge->length()), ps_d, face,
-                                             edge, invert));
+            new_intervals.push_back(Interval(x, y, info.e1, min(info.e2, edge->length()),
+                                             ps_d, face, edge, invert));
         }
         // otherwise doesn't intersect this edge
     }
@@ -37,11 +37,11 @@ vector<Interval> MMP::prop_thru_interval(Vector2 src, Interval &w, Face *face, d
 
 void MMP::propagate()
 {
-	auto top_ite = *intervals_heap.begin();
+    auto top_ite = *intervals_heap.begin();
     Interval prop_w = *top_ite;
     Edge *prop_e = prop_w.edge;
 
-	intervals_heap.erase(intervals_heap.begin());
+    intervals_heap.erase(intervals_heap.begin());
     update_not_reached(top_ite);
 
     // should this be done before or after inserting new intervals?
@@ -71,8 +71,8 @@ vector<Interval> MMP::get_new_intervals(Interval &w, Face *face)
         // treat v0 as a new source
 
         Vector2 new_src = Vector2(0, 0);
-        auto intervals = prop_thru_interval(new_src, w, face,
-                                            w.ps_d + (new_src - w.pos).length());
+        auto intervals
+            = prop_thru_interval(new_src, w, face, w.ps_d + (new_src - w.pos).length());
 
         // if (intervals.size())
         //     cout << intervals.size() << " to be added for saddle " << *v0 << ":"
@@ -87,8 +87,8 @@ vector<Interval> MMP::get_new_intervals(Interval &w, Face *face)
 
         Vector2 new_src = Vector2(edge->length(), 0);
 
-        auto intervals = prop_thru_interval(new_src, w, face,
-                                            w.ps_d + (new_src - w.pos).length());
+        auto intervals
+            = prop_thru_interval(new_src, w, face, w.ps_d + (new_src - w.pos).length());
         // if (intervals.size())
         //     cout << intervals.size() << " to be added for saddle " << *v1 << ":"
         //          << endl;

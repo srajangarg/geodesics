@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     // auto path1 = mmp.algorithm();
     auto path1 = mmp.algorithm();
     auto path2 = djk.algorithm();
-    
+
     Viewer viewer;
     viewer.setObject(&mesh, path1, path2);
     viewer.launch(argc, argv);

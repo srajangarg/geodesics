@@ -1,7 +1,7 @@
 #include "Algo.h"
 
 vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
-                               const Interval &i2)
+                                    const Interval &i2)
 {
     // takes in  a segment st-end and returns 1or2 interval
     // with the closest source indicated on each interval
@@ -29,8 +29,7 @@ vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
         equidist_pt = false;
     else if (abs(a) < EPS)
         x = -c / b;
-    else
-    {
+    else {
         if (a < 0)
             x = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
         else
@@ -47,7 +46,6 @@ vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
         // cout<<"i1val : "<<i1val<<endl;
         // cout<<"i2val : "<<i2val<<endl;
 
-
         if (i1val < i2val) {
             b_intervals.push_back(Interval(ps1, st, x, i1));
             b_intervals.push_back(Interval(ps2, x, end, i2));
@@ -60,8 +58,7 @@ vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
         auto i1val = ((ps1 - st_v).length() + i1.ps_d);
         auto i2val = ((ps2 - st_v).length() + i2.ps_d);
 
-        if (abs(i1val -i2val) < EPS)
-        {
+        if (abs(i1val - i2val) < EPS) {
             i1val = ((ps1 - end_v).length() + i1.ps_d);
             i2val = ((ps2 - end_v).length() + i2.ps_d);
         }
@@ -96,7 +93,7 @@ vector<Interval> MMP::sanitize_and_merge(vector<Interval> &intervals)
         if (w.end - w.st > EPS) {
             // check if last merged interval and w have same pos and everything
             if ((last_merged_interval.pos - w.pos).length() < EPS
-                and abs(last_merged_interval.ps_d - w.ps_d) < EPS 
+                and abs(last_merged_interval.ps_d - w.ps_d) < EPS
                 and last_merged_interval.from == w.from) {
                 // merge last_merge_interval and w
                 last_merged_interval.end = w.end;
@@ -188,8 +185,6 @@ void MMP::insert_new_interval(Interval &new_w)
                 new_intervals.push_back(interval);
             // cout<<"----"<<endl;
 
-
-
             new_w.st = w.end;
         } else if (w.st < new_w.st and w.end > new_w.end) {
             //     ----new----
@@ -232,7 +227,7 @@ void MMP::insert_new_interval(Interval &new_w)
 
     for (auto &interval : sanitized_new_intervals) {
 
-        Interval* keep_old_itv = NULL;
+        Interval *keep_old_itv = NULL;
         for (auto &old_itv : old_intervals)
             if (interval == old_itv)
                 keep_old_itv = &old_itv;
@@ -243,8 +238,7 @@ void MMP::insert_new_interval(Interval &new_w)
         if (keep_old_itv) {
             intervals.push_back(*keep_old_itv);
             // not_to_delete.insert(keep_old_itv);
-            if (not keep_old_itv->propagated)
-            {
+            if (not keep_old_itv->propagated) {
                 auto pp = intervals_heap.insert(--intervals.end());
                 assert(pp.second);
             }

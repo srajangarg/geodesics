@@ -191,13 +191,12 @@ void Viewer::draw()
             drawOutlineBox(mesh->getAABB());
         }
 
-
         ////////////////////
         glLineWidth(2.5);
         render_system->setShader(NULL);
         render_system->setColor(ColorRGB(1, 0, 0));
         render_system->beginPrimitive(Graphics::RenderSystem::Primitive::LINE_STRIP);
-        for (auto &p: path1)
+        for (auto &p : path1)
             render_system->sendVertex(p.pos);
         render_system->endPrimitive();
         ////////////////////
@@ -205,7 +204,7 @@ void Viewer::draw()
         render_system->setShader(NULL);
         render_system->setColor(ColorRGB(0, 1, 0));
         render_system->beginPrimitive(Graphics::RenderSystem::Primitive::LINE_STRIP);
-        for (auto &p: path2)
+        for (auto &p : path2)
             render_system->sendVertex(p.pos);
         render_system->endPrimitive();
         ////////////////////

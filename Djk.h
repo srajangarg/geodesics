@@ -13,15 +13,15 @@ public:
     set<Point> not_reached;
 
     struct IntervalPtrComp {
-        bool operator()(const Vertex* lhs, const Vertex* rhs) const
-        {   
+        bool operator()(const Vertex *lhs, const Vertex *rhs) const
+        {
             if (lhs->dis != rhs->dis)
                 return lhs->dis < rhs->dis;
             return lhs < rhs;
         }
     };
 
-    multiset<Vertex*, IntervalPtrComp> heap;
+    multiset<Vertex *, IntervalPtrComp> heap;
     vector<Point> destinations;
 
     DJK()
@@ -42,7 +42,7 @@ public:
         destinations = dests;
     }
 
-    void update_not_reached(Vertex* v)
+    void update_not_reached(Vertex *v)
     {
         vector<set<Point>::iterator> to_erase;
         for (auto it = not_reached.begin(); it != not_reached.end(); it++) {
@@ -57,9 +57,9 @@ public:
                 case Point::EDGE: {
 
                     auto e = (Edge *)it->p;
-                    if ((e->getEndpoint(0)->visited and e->getEndpoint(1) == v) or
-                        (e->getEndpoint(1)->visited and e->getEndpoint(0) == v))
-                        to_erase.push_back(it);                        
+                    if ((e->getEndpoint(0)->visited and e->getEndpoint(1) == v)
+                        or (e->getEndpoint(1)->visited and e->getEndpoint(0) == v))
+                        to_erase.push_back(it);
                     break;
                 }
 
@@ -80,13 +80,12 @@ public:
         heap.erase(heap.begin());
         update_not_reached(prop_v);
 
-        for (auto &e : prop_v->edges)
-        {
+        for (auto &e : prop_v->edges) {
             auto v = e->getOtherEndpoint(prop_v);
-            if (v->visited) continue;
+            if (v->visited)
+                continue;
 
-            if (prop_v->dis + e->length() < v->dis)
-            {
+            if (prop_v->dis + e->length() < v->dis) {
                 auto it = heap.find(v);
                 if (it != heap.end())
                     heap.erase(it);
@@ -95,18 +94,17 @@ public:
                 heap.insert(v);
             }
         }
-
     }
 
     vector<Point> trace_back(Point destination)
-    {   
+    {
         vector<Point> path;
         path.push_back(destination);
 
-        Vertex* stv;
+        Vertex *stv;
         switch (destination.ptype) {
             case Point::VERTEX: {
-                stv = (Vertex* )(destination.p);
+                stv = (Vertex *)(destination.p);
                 break;
             }
 
@@ -114,8 +112,8 @@ public:
                 auto e = (Edge *)destination.p;
                 auto v0 = e->getEndpoint(0), v1 = e->getEndpoint(1);
 
-                if (v0->dis + (destination.pos - v0->getPosition()).length() < 
-                    v1->dis + (destination.pos - v1->getPosition()).length())
+                if (v0->dis + (destination.pos - v0->getPosition()).length()
+                    < v1->dis + (destination.pos - v1->getPosition()).length())
                     stv = v0;
                 else
                     stv = v1;
@@ -128,8 +126,7 @@ public:
                 assert(false);
         }
 
-        while (stv->par != NULL)
-        {
+        while (stv->par != NULL) {
             stv = stv->par;
             path.push_back(Point(stv));
         }
@@ -155,7 +152,7 @@ public:
         switch (source.ptype) {
             case Point::VERTEX: {
 
-                auto v = (Vertex* )(source.p);
+                auto v = (Vertex *)(source.p);
                 v->dis = 0;
                 heap.insert(v);
                 break;
@@ -164,8 +161,7 @@ public:
             case Point::EDGE: {
                 auto e = (Edge *)source.p;
 
-                for (auto &v : e->endpoints)
-                {
+                for (auto &v : e->endpoints) {
                     v->dis = (v->getPosition() - source.pos).length();
                     heap.insert(v);
                 }

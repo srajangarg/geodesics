@@ -244,7 +244,7 @@ public:
     float normal_normalization_factor;
 
     double dis;
-    Vertex* par;
+    Vertex *par;
     bool visited;
 
     friend ostream &operator<<(ostream &os, const Vertex &e);

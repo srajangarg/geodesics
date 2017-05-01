@@ -61,7 +61,8 @@ public:
     set<Point> not_reached;
 
     struct IntervalPtrComp {
-        bool operator()(const list<Interval>::iterator lhs, const list<Interval>::iterator rhs) const
+        bool operator()(const list<Interval>::iterator lhs,
+                        const list<Interval>::iterator rhs) const
         {
             return *lhs < *rhs;
         }
@@ -84,15 +85,16 @@ public:
         not_reached.insert(dests.begin(), dests.end());
     }
 
-    vector<Interval> prop_thru_interval(Vector2 src, Interval &w, Face *face, double ps_d);
+    vector<Interval> prop_thru_interval(Vector2 src, Interval &w, Face *face,
+                                        double ps_d);
 
     void update_not_reached(list<Interval>::iterator &w);
 
-    void best_first_saddle(Edge* e, double & cur_x, Interval & cur_itv, int endpoint);
+    void best_first_saddle(Edge *e, double &cur_x, Interval &cur_itv, int endpoint);
 
     void propagate();
 
-    void best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv);
+    void best_first_saddle(Vertex *v, double &cur_x, Interval &cur_itv);
 
     vector<Point> trace_back(Point destination);
 
@@ -149,11 +151,14 @@ public:
 
             // cout << "EDGE MAP ---" << endl;
             // for (auto &pp : edge_intervals) {
-            //     // if ((not (pp.first->getEndpoint(0)->index == 33 and pp.first->getEndpoint(1)->index == 52))
-            //     //     and (not (pp.first->getEndpoint(0)->index == 33 and pp.first->getEndpoint(1)->index == 42)))
+            //     // if ((not (pp.first->getEndpoint(0)->index == 33 and
+            //     pp.first->getEndpoint(1)->index == 52))
+            //     //     and (not (pp.first->getEndpoint(0)->index == 33 and
+            //     pp.first->getEndpoint(1)->index == 42)))
             //     //     continue;
 
-            //     // if (not (pp.first->getEndpoint(0)->index == 42 and pp.first->getEndpoint(1)->index == 52))
+            //     // if (not (pp.first->getEndpoint(0)->index == 42 and
+            //     pp.first->getEndpoint(1)->index == 52))
             //     //     continue;
 
             //     cout << endl;
