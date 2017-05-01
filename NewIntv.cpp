@@ -122,7 +122,7 @@ void MMP::insert_new_interval(Interval &new_w)
 {
     // updates edge_intervals[e] and intervals according to algo discussed
     // should be O(edge_intervals[e])
-    cout << "Inserting new interval " << new_w << endl;
+    // cout << "Inserting new interval " << new_w << endl;
 
     auto &intervals = edge_intervals[new_w.edge];
     vector<Interval> new_intervals;
@@ -227,8 +227,8 @@ void MMP::insert_new_interval(Interval &new_w)
     intervals.clear();
 
     auto sanitized_new_intervals = sanitize_and_merge(new_intervals);
-    cout << "Old intervals cleared, all intervals on " << *new_w.edge
-         << " are :" << endl;
+    // cout << "Old intervals cleared, all intervals on " << *new_w.edge
+    //      << " are :" << endl;
 
     for (auto &interval : sanitized_new_intervals) {
 
@@ -238,7 +238,7 @@ void MMP::insert_new_interval(Interval &new_w)
                 keep_old_itv = &old_itv;
 
         interval.recompute_min_d();
-        cout << interval << endl;
+        // cout << interval << endl;
 
         if (keep_old_itv) {
             intervals.push_back(*keep_old_itv);
@@ -255,7 +255,7 @@ void MMP::insert_new_interval(Interval &new_w)
             assert(pp.second);
         }
     }
-    cout << endl;
+    // cout << endl;
 
     // for (auto &itv : old_intervals)
     //     if (not_to_delete.find(itv) == not_to_delete.end())

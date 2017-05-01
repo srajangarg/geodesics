@@ -51,10 +51,10 @@ void MMP::propagate()
         if (prop_w.from == face)
             continue;
 
-        cout << "Propagating " << prop_w << " on " << *face << endl;
+        // cout << "Propagating " << prop_w << " on " << *face << endl;
         auto candidates = get_new_intervals(prop_w, face);
 
-        cout << endl;
+        // cout << endl;
         for (auto &new_w : candidates)
             insert_new_interval(new_w);
     }
@@ -74,12 +74,12 @@ vector<Interval> MMP::get_new_intervals(Interval &w, Face *face)
         auto intervals = prop_thru_interval(new_src, w, face,
                                             w.ps_d + (new_src - w.pos).length());
 
-        if (intervals.size())
-            cout << intervals.size() << " to be added for saddle " << *v0 << ":"
-                 << endl;
+        // if (intervals.size())
+        //     cout << intervals.size() << " to be added for saddle " << *v0 << ":"
+        //          << endl;
 
         for (auto &ii : intervals)
-            cout << ii << endl, new_intervals.push_back(ii);
+            /*cout << ii << endl,*/ new_intervals.push_back(ii);
     }
 
     if (edge->length() - w.end < EPS and v1->saddle_or_boundary) {
@@ -89,20 +89,20 @@ vector<Interval> MMP::get_new_intervals(Interval &w, Face *face)
 
         auto intervals = prop_thru_interval(new_src, w, face,
                                             w.ps_d + (new_src - w.pos).length());
-        if (intervals.size())
-            cout << intervals.size() << " to be added for saddle " << *v1 << ":"
-                 << endl;
+        // if (intervals.size())
+        //     cout << intervals.size() << " to be added for saddle " << *v1 << ":"
+        //          << endl;
 
         for (auto &ii : intervals)
-            cout << ii << endl, new_intervals.push_back(ii);
+            /*cout << ii << endl,*/ new_intervals.push_back(ii);
     }
 
     // generate intervals from (usual) current source
     auto intervals = prop_thru_interval(w.pos, w, face, w.ps_d);
 
-    if (intervals.size())
-        cout << intervals.size() << " to be added for usual propogate:" << endl;
+    // if (intervals.size())
+    //     cout << intervals.size() << " to be added for usual propogate:" << endl;
     for (auto &ii : intervals)
-        cout << ii << endl, new_intervals.push_back(ii);
+        /*cout << ii << endl,*/ new_intervals.push_back(ii);
     return new_intervals;
 }

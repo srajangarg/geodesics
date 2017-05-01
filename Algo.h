@@ -165,20 +165,14 @@ public:
             // cin>>x;
         }
 
-        cout << "EDGE MAP ---" << endl;
-        for (auto &pp : edge_intervals) {
-            // if ((not (pp.first->getEndpoint(0)->index == 33 and pp.first->getEndpoint(1)->index == 52))
-            //     and (not (pp.first->getEndpoint(0)->index == 33 and pp.first->getEndpoint(1)->index == 42)))
-            //     continue;
+        // cout << "EDGE MAP ---" << endl;
+        // for (auto &pp : edge_intervals) {
 
-            // if (not (pp.first->getEndpoint(0)->index == 42 and pp.first->getEndpoint(1)->index == 52))
-            //     continue;
-
-            cout << endl;
-            cout << *(pp.first) << " : " << endl;
-            for (auto &w : pp.second)
-                cout << w << endl;
-        }
+        //     cout << endl;
+        //     cout << *(pp.first) << " : " << endl;
+        //     for (auto &w : pp.second)
+        //         cout << w << endl;
+        // }
 
         return trace_back(best_interval_dest.begin()->first);
     }

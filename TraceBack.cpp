@@ -5,7 +5,7 @@ void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
     // assert(v->saddle_or_boundary);
     double best_x;
     double mind = std::numeric_limits<double>::infinity();
-    cout<<"bfsd"<<endl;
+    // cout<<"bfsd"<<endl;
 
     Interval bf;
     for (auto &e : v->edges) {
@@ -33,7 +33,7 @@ void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
         } else {
             ii = edge_intervals[e].back();
             end = 1;
-            cout<<ii<<endl;
+            // cout<<ii<<endl;
             if (e->length() - ii.end > EPS)
                 continue;
             end = ii.end;
@@ -66,7 +66,7 @@ void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
         }
     }
 
-    cout<<"final : "<<best_x<<endl;
+    // cout<<"final : "<<best_x<<endl;
 
     assert(mind != std::numeric_limits<double>::infinity());
     cur_x = best_x;
@@ -75,7 +75,7 @@ void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
 
 vector<Point> MMP::trace_back(Point destination)
 {   
-    cout<<"TRACE BACK ------------"<<endl<<endl;
+    // cout<<"TRACE BACK ------------"<<endl<<endl;
 
     vector<Point> path;
     assert(best_interval_dest.find(destination) != best_interval_dest.end());
@@ -99,9 +99,9 @@ vector<Point> MMP::trace_back(Point destination)
             assert(false);
     }
 
-    cout<<"initial : "<<endl;
-    cout<<"cur_x : "<<cur_x<<endl;
-    cout<<"cur_itv : "<<cur_itv<<endl;
+    // cout<<"initial : "<<endl;
+    // cout<<"cur_x : "<<cur_x<<endl;
+    // cout<<"cur_itv : "<<cur_itv<<endl;
 
     //saddle and sources not handled
     int i = 0;
@@ -109,17 +109,17 @@ vector<Point> MMP::trace_back(Point destination)
     {
 
         //check if cur_x and cur_itv 
-        cout<<"cur_x : "<<cur_x<<endl;
-        cout<<"cur_itv : "<<cur_itv<<endl;
+        // cout<<"cur_x : "<<cur_x<<endl;
+        // cout<<"cur_itv : "<<cur_itv<<endl;
 
         path.push_back(Point(cur_itv.edge, cur_x / cur_itv.edge->length()));
-        cout<<"Path : "<<Point(cur_itv.edge, cur_x / cur_itv.edge->length()).pos<<endl;
+        // cout<<"Path : "<<Point(cur_itv.edge, cur_x / cur_itv.edge->length()).pos<<endl;
 
 
         //check whether cur_x and cur_itv are close to source or saddle
         if ((abs(cur_x) < EPS and source.p == cur_itv.edge->getEndpoint(0)) or 
             (abs(cur_x - cur_itv.edge->length()) < EPS and source.p == cur_itv.edge->getEndpoint(1)) or 
-            (source.p == cur_itv.edge and abs(cur_x/cur_itv.edge->length() - source.ratio) < EPS))
+             cur_itv.from == NULL)
         {
             //source reached
             path[path.size() - 1] = source;
@@ -128,8 +128,8 @@ vector<Point> MMP::trace_back(Point destination)
         if((Vector2(cur_x, 0) - cur_itv.pos).length() < EPS and abs(cur_x) < EPS)
         {
             //get the closest interval to this point
-            cout<<"saddle "<<*cur_itv.edge->getEndpoint(0)<<endl;
-            cout<<"finding"<<endl;
+            // cout<<"saddle "<<*cur_itv.edge->getEndpoint(0)<<endl;
+            // cout<<"finding"<<endl;
             best_first_saddle(cur_itv.edge->getEndpoint(0), cur_x, cur_itv);
             // cout<<"after saddle 1"<<endl;
             // cout<<"cur_sadd : "<<cur_x<<endl;
@@ -138,7 +138,7 @@ vector<Point> MMP::trace_back(Point destination)
         }
         else if((Vector2(cur_x, 0) - cur_itv.pos).length() < EPS and abs(cur_x - cur_itv.edge->length()) < EPS)
         {
-            cout<<"saddle "<<*cur_itv.edge->getEndpoint(1)<<endl;
+            // cout<<"saddle "<<*cur_itv.edge->getEndpoint(1)<<endl;
             //get the closest interval from this point
             // cout<<"finding"<<endl;
             best_first_saddle(cur_itv.edge->getEndpoint(1), cur_x, cur_itv);
@@ -183,8 +183,8 @@ vector<Point> MMP::trace_back(Point destination)
                     break;
                 }
             }
-            cout<<"a1 : "<<angle1<<endl;
-            cout<<"a2 : "<<angle2<<endl;
+            // cout<<"a1 : "<<angle1<<endl;
+            // cout<<"a2 : "<<angle2<<endl;
 
             if (angle1 > angle2)
             {
@@ -194,11 +194,11 @@ vector<Point> MMP::trace_back(Point destination)
             else
                 endpoint = 1;
         }
-        cout<<"endp : "<<endpoint<<endl;
+        // cout<<"endp : "<<endpoint<<endl;
 
         if (abs(angle1 - angle2) < EPS)
         {
-            cout<<"saddle "<<*opp_vertex<<endl;
+            // cout<<"saddle "<<*opp_vertex<<endl;
             best_first_saddle(opp_vertex, cur_x, cur_itv);
             continue;
         }
@@ -224,30 +224,30 @@ vector<Point> MMP::trace_back(Point destination)
                 auto common = cur_e->getCommonVertex(par_e);
                 assert(common != NULL);
                 auto theta = cur_itv.from->getAngle(common);
-                cout<<"before : "<<endl;
-                cout<<"cur_x : "<<cur_x<<" y : "<<y<<" e : "<<e<<endl;
+                // cout<<"before : "<<endl;
+                // cout<<"cur_x : "<<cur_x<<" y : "<<y<<" e : "<<e<<endl;
                 if (common == cur_e->getEndpoint(0))
                     cur_x = e - cur_x, x = e - x;
 
-                cout<<"form : after : "<<endl;
-                cout<<"cur_x : "<<cur_x<<" y : "<<y<<" e : "<<e<<endl;
+                // cout<<"form : after : "<<endl;
+                // cout<<"cur_x : "<<cur_x<<" y : "<<y<<" e : "<<e<<endl;
                 auto new_x
                     = (y * (e - cur_x)) / (sin(theta) * (x - cur_x) + cos(theta) * y);
 
                 if (common == par_e->getEndpoint(1))
                     new_x = par_e->length() - new_x;
 
-                cout<<"edge : "<<*ee<<endl;
-                cout<<"cur_x : "<<cur_x<<" new_x : "<<new_x<<endl;
+                // cout<<"edge : "<<*ee<<endl;
+                // cout<<"cur_x : "<<cur_x<<" new_x : "<<new_x<<endl;
 
                 if (new_x >= -EPS and new_x <= par_e->length() + EPS)
                 {
-                    cout<<"inside, new_x : "<<new_x<<endl;
+                    // cout<<"inside,/ new_x : "<<new_x<<endl;
                     new_x = max(0.0, min(par_e->length(), new_x));
 
                     // path.push_back(Point(par_e, new_x / par_e->length()));
                     // cout<<"Path : "<<Point(par_e, new_x / par_e->length()).pos<<endl;
-                    cout<<"par_e : "<<*par_e<<endl;
+                    // cout<<"par_e : "<<*par_e<<endl;
                     auto t_itv = cur_itv;
                     if(abs(new_x) < EPS)
                         cur_itv = edge_intervals[par_e].front();
@@ -258,7 +258,7 @@ vector<Point> MMP::trace_back(Point destination)
                         for (auto & ii : edge_intervals[par_e])
                             if (ii.st <= new_x and new_x <= ii.end /*and ii.from != cur_itv.from*/)
                             {
-                                cout<<"new_itv found"<<endl;
+                                // cout<<"new_itv found"<<endl;
                                 cur_itv = ii;
                             }
                     }
@@ -266,7 +266,7 @@ vector<Point> MMP::trace_back(Point destination)
                     if (cur_itv == t_itv)
                         assert(false);
 
-                    cout<<"new_itv : "<<cur_itv<<endl;
+                    // cout<<"new_itv : "<<cur_itv<<endl;
 
                     cur_x = new_x;
 
@@ -336,7 +336,7 @@ void MMP::initialize()
     assert(check_mesh_sanity());
     auto visible = source.get_visible_edges();
 
-    cout << "Making initial intervals ..." << endl;
+    // cout << "Making initial intervals ..." << endl;
     switch (source.ptype) {
         case Point::VERTEX: {
             for (auto &e : visible) {
