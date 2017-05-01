@@ -32,24 +32,15 @@ int main(int argc, char *argv[])
     Point d(&(mesh.vertices.back()));
 
     MMP mmp(&mesh, p, d);
-    cout << "src : vertex " << mesh.vertices.front().index << endl;
-    cout << "dest : vertex " << mesh.vertices.back().index << endl;
-    auto path = mmp.algorithm();
-
-    cout<<endl;
-    // for (auto &v : mesh.vertices)
-    //     cout<<v<<" "<<v.dis<<endl;
-    if (path.size() > 0)
-    {
-        cout<<path[0];
-        for (int i = 1; i < path.size(); i++)
-            cout<<" -- "<<path[i];
-        cout<<endl;
-    }    
-    cout << endl;
+    DJK djk(&mesh, p, d);
+    // cout << "src : vertex " << mesh.vertices.front().index << endl;
+    // cout << "dest : vertex " << mesh.vertices.back().index << endl;
+    // auto path1 = mmp.algorithm();
+    std::vector<Point> path1 = mmp.algorithm();
+    auto path2 = djk.algorithm();
     
     Viewer viewer;
-    viewer.setObject(&mesh, path, p);
+    viewer.setObject(&mesh, path1, path2);
     viewer.launch(argc, argv);
 
     return 0;

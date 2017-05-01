@@ -2,32 +2,6 @@
 
 void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
 {   
-    // Vertex * v = e->getEndpoint(endpoint);
-
-    // double distance = std::numeric_limits<double>::infinity();
-    // Interval min_interval; 
-    // for (auto it = v->edges.begin(); it != v->edges.end(); ++it)
-    // {
-    //     Interval interval;
-    //     double source_dist = interval.ps_d;
-    //     if (v == (*it)->getEndpoint(0))
-    //     {
-    //         interval = *(edge_intervals[*it].front());
-    //         if (abs(interval.st) < EPS)
-    //         source_dist += (interval.pos - Vector2(interval.st, 0.0)).length();
-    //         source_dist += interval.st;
-    //     }
-    //     else
-    //     {
-    //         interval = *(edge_intervals[*it].back());
-    //         source_dist += (interval.pos - Vector2(interval.end, 0.0)).length();
-    //         source_dist += ((*it)->length() - interval.end);
-    //     }
-    //     if (source_dist < distance)
-    //         min_interval = interval;
-    // }
-
-    // auto v = ed->getEndpoint(endpoint);
     assert(v->saddle_or_boundary);
     double best_x;
     double mind = std::numeric_limits<double>::infinity();

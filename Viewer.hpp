@@ -31,15 +31,15 @@ private:
     static bool show_bbox;
     static bool show_edges;
     static Vertex const *highlighted_vertex;
-    static vector<Point> path;
-    static Point dest;
+    static vector<Point> path1;
+    static vector<Point> path2;
 
 public:
     /** Set the object to be displayed. The object must persist as long as the
      * viewer does. */
-    static void setObject(Mesh *o, const vector<Point> &p, Point & d);
+    static void setObject(Mesh *o, const vector<Point> &p1, const vector<Point> &p2);
 
-    /**
+    /**1
      * Call this function to launch the viewer. It will not return under normal
      * circumstances, so make sure stuff is set up
      * before you call it!

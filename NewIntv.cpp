@@ -31,9 +31,10 @@ vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
         x = -c / b;
     else
     {
-        // x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
-        // if (x <= st or x >= end)
+        if (a < 0)
             x = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
+        else
+            x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
     }
 
     // cout<<"a "<<a<<" b "<<b<<" c "<<c<<endl;
