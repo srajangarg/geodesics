@@ -73,13 +73,23 @@ void MMP::best_first_saddle(Vertex* v, double & cur_x, Interval & cur_itv)
         // printf("dis : %.9f\n",dis);
         // cout<<"int : "<<ii<<endl;
 
+        if (ii.pos.length() - end < EPS)
+        {
+            continue;
+        }
 
-
-        if (dis < mind or (abs(dis - mind) < EPS and (ii.pos.length() - end > EPS))) {
+        if (dis < mind) {
             bf = ii;
             best_x = temp_x;
             mind = dis;
         }
+
+
+        // if (dis < mind or (abs(dis - mind) < EPS and (ii.pos.length() - end > EPS))) {
+        //     bf = ii;
+        //     best_x = temp_x;
+        //     mind = dis;
+        // }
     }
 
     cout<<"final : "<<best_x<<endl;
