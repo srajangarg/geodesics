@@ -324,6 +324,8 @@ void MMP::initialize()
             for (auto &e : visible) {
                 Interval ii(0, 0, 0, e->length(), 0, NULL, e,
                             (source.p == e->getEndpoint(1)));
+                //set an invalid iterator 
+                ii.parent = edge_intervals[e].end();
                 insert_new_interval(ii);
             }
             break;
@@ -332,6 +334,8 @@ void MMP::initialize()
         case Point::EDGE: {
             auto e = (Edge *)source.p;
             Interval ii(source.ratio * e->length(), 0, 0, e->length(), 0, NULL, e, false);
+            //set an invalid iterator 
+            ii.parent = edge_intervals[e].end();
             insert_new_interval(ii);
             break;
         }
@@ -342,8 +346,9 @@ void MMP::initialize()
                 Vector3 pos2 = e->getEndpoint(1)->getPosition();
                 double x = (source.pos - pos1).dot((pos2 - pos1).unit());
                 double y = sqrt((source.pos - pos1).squaredLength() - x * x);
-
                 Interval ii(x, y, 0, e->length(), 0, (Face *)(source.p), e, false);
+                //set an invalid iterator 
+                ii.parent = edge_intervals[e].end();
                 insert_new_interval(ii);
             }
             break;
