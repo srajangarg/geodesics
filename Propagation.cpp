@@ -26,13 +26,31 @@ vector<Interval> MMP::prop_thru_interval(Vector2 src, Interval &w, Face *face,
             if (y < EPS)
                 y = 0;
 
-            new_intervals.push_back(Interval(x, y, info.e1, min(info.e2, edge->length()),
-                                             ps_d, face, edge, invert));
+            Interval ii(x, y, info.e1, min(info.e2, edge->length()),
+                        ps_d, face, edge, invert);
+
+            set_parent_iterator(ii, w);
+            new_intervals.push_back(ii);
         }
         // otherwise doesn't intersect this edge
     }
 
     return new_intervals;
+}
+
+void MMP::set_parent_iterator(Interval & ii, Interval & parent)
+{
+    //this is called implies that ii is valid
+    for (auto it = edge_intervals[parent.edge].begin();it != edge_intervals[parent.edge].end(); it++)
+    {
+        if (*it == parent)
+        {
+            ii.parent = it;
+            return;
+        }
+    }
+    //shouldn't reach here
+    assert(false);
 }
 
 void MMP::propagate()

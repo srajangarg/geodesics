@@ -12,6 +12,7 @@ public:
     Vector2 pos;
     double st, end, ps_d;
     double min_d;
+    list<Interval>::iterator parent;
 
     Edge *edge;
     Face *from;
@@ -22,6 +23,8 @@ public:
     }
 
     void set_st_end_pos(double st_, double end_, bool invert);
+
+    void set_parent_iterator(Interval* parent_);
 
     Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
              Edge *edge_, bool invert = false);
@@ -91,6 +94,8 @@ public:
     void update_not_reached(list<Interval>::iterator &w);
 
     void best_first_saddle(Edge *e, double &cur_x, Interval &cur_itv, int endpoint);
+
+    void set_parent_iterator(Interval & ii, Interval & parent);
 
     void propagate();
 

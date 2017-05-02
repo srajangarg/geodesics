@@ -32,6 +32,26 @@ void Interval::set_st_end_pos(double st_, double end_, bool invert)
     assert(st < end and st >= 0 and pos.y() >= 0 and end <= edge->length());
 }
 
+// void Interval::set_parent_iterator(Interval* parent_)
+// {
+//     if (parent_ == NULL)
+//     {
+//         //set an invalid iterator
+//         // parent = 0;
+//         return;
+//     }
+//     else
+//     {
+//         // for (auto it = )
+//         // {
+
+//         // }
+//         Point a;
+//         a = source;
+//     }
+// }
+
+
 ostream &operator<<(ostream &os, const Interval &e)
 {
     os << "I(st/end: (" << e.st << ", " << e.end << "), pos: " << e.pos
@@ -103,6 +123,7 @@ Interval::Interval(double x_, double y_, double st_, double end_, double ps_d_,
     edge = edge_;
     from = from_;
     ps_d = ps_d_;
+    // parent = parent_;
     pos = Vector2(x_, y_);
     set_st_end_pos(st_, end_, invert);
     // INVARIANT - st is always close to lower endpoint than higher endpoint pointer
@@ -116,6 +137,7 @@ Interval::Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *fr
     from = from_;
     pos = pos_;
     ps_d = ps_d_;
+    // parent = parent_;
     set_st_end_pos(st_, end_, invert);
     recompute_min_d();
 }
@@ -125,6 +147,7 @@ Interval::Interval(Vector2 pos_, double st_, double end_, const Interval &i, boo
     edge = i.edge;
     from = i.from;
     ps_d = i.ps_d;
+    parent = i.parent;
     pos = pos_;
     set_st_end_pos(st_, end_, invert);
     recompute_min_d();
