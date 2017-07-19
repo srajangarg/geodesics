@@ -98,13 +98,12 @@ Interval::Info Interval::get_info_edge(Vector2 src, Edge *e, Face *face) const
 }
 
 Interval::Interval(double x_, double y_, double st_, double end_, double ps_d_,
-                   Face *from_, Edge *edge_, list<Interval>::iterator par, bool invert)
+                   Face *from_, Edge *edge_, bool invert)
 {
     edge = edge_;
     from = from_;
     ps_d = ps_d_;
     pos = Vector2(x_, y_);
-    parent = par;
     set_st_end_pos(st_, end_, invert);
     // INVARIANT - st is always close to lower endpoint than higher endpoint pointer
     recompute_min_d();

@@ -323,7 +323,7 @@ void MMP::initialize()
         case Point::VERTEX: {
             for (auto &e : visible) {
                 Interval ii(0, 0, 0, e->length(), 0, NULL, e,
-                            (source.p == e->getEndpoint(1)), edge_intervals[e].end());
+                            (source.p == e->getEndpoint(1)));
                 insert_new_interval(ii);
             }
             break;

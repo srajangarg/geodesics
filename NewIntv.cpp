@@ -34,11 +34,15 @@ vector<Interval> MMP::source_bisect(double st, double end, const Interval &i1,
             x = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
         else
             x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
+        // x = (-b - sqrt(b * b - 4 * a * c)) / (2 * a);
+        // if (not (x >= st and x <= end))
+        //     x = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
+
     }
 
     // cout<<"a "<<a<<" b "<<b<<" c "<<c<<endl;
     // cout<<"x : "<<x<<endl;
-    if (equidist_pt and x > st and x < end) {
+    if (equidist_pt and x >= st and x <= end) {
         // [st, x] closer to ps1 or ps2?
         auto i1val = ((ps1 - st_v).length() + i1.ps_d);
         auto i2val = ((ps2 - st_v).length() + i2.ps_d);
