@@ -10,7 +10,7 @@ using namespace std;
 class Point
 {
 public:
-    enum PointType { VERTEX, EDGE, FACE, UNDEFINED };
+    enum PointType { VERTEX, EDGE, UNDEFINED };
 
     void *p;
     PointType ptype;
@@ -26,15 +26,6 @@ public:
         p = v;
         pos = v->getPosition();
         ptype = VERTEX;
-    }
-
-    Point(Face *f)
-    {
-        p = f;
-        for (auto it = f->vertices.begin(); it != f->vertices.end(); ++it)
-            pos += (*it)->getPosition();
-        pos /= f->vertices.size();
-        ptype = FACE;
     }
 
     Point(Edge *e, double rat = 0.5)
@@ -79,11 +70,7 @@ public:
             case EDGE:
                 visible.push_back((Edge *)p);
                 break;
-
-            case FACE:
-                for (auto it = ((Face *)p)->edges.begin(); it != ((Face *)p)->edges.end();
-                     ++it)
-                    visible.push_back(*it);
+                
             default:
                 assert(false);
         }

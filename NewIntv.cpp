@@ -216,7 +216,6 @@ void MMP::insert_new_interval(Interval &new_w)
     for (auto it = intervals.begin(); it != intervals.end(); it++)
         intervals_heap.erase(it);
 
-    // set<Interval *> not_to_delete;
     // COPY happening here
     auto old_intervals = intervals;
     intervals.clear();

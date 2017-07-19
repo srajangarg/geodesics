@@ -16,6 +16,7 @@ public:
     Edge *edge;
     Face *from;
     bool propagated = false;
+    list<Interval>::iterator parent;
 
     Interval()
     {
@@ -24,7 +25,7 @@ public:
     void set_st_end_pos(double st_, double end_, bool invert);
 
     Interval(double x_, double y_, double st_, double end_, double ps_d_, Face *from_,
-             Edge *edge_, bool invert = false);
+             Edge *edge_, list<Interval>::iterator par, bool invert = false);
 
     Interval(Vector2 pos_, double st_, double end_, double ps_d_, Face *from_,
              Edge *edge_, bool invert = false);
