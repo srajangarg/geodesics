@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
 
     Point p(&(mesh.vertices.front()));
     Point d(&(mesh.vertices.back()));
+    cout<<p<<endl;
+    cout<<d<<endl;
 
     MMP mmp(&mesh, p, d);
     DJK djk(&mesh, p, d);

@@ -22,21 +22,16 @@ void MMP::best_first_saddle(Vertex *v, double &cur_x, Interval &cur_itv)
         if (edge_intervals[e].empty())
             continue;
 
-        double end;
         if (v == e->getEndpoint(0)) {
             ii = edge_intervals[e].front();
             if (ii.st > EPS)
                 continue;
-            end = ii.st;
             dis = ii.pos.length() + ii.ps_d;
             temp_x = 0.0;
         } else {
             ii = edge_intervals[e].back();
-            end = 1;
-            // cout<<ii<<endl;
             if (e->length() - ii.end > EPS)
                 continue;
-            end = ii.end;
             dis = (ii.pos - Vector2(e->length(), 0)).length() + ii.ps_d;
             temp_x = e->length();
         }
@@ -44,21 +39,13 @@ void MMP::best_first_saddle(Vertex *v, double &cur_x, Interval &cur_itv)
         if (ii.from == cur_itv.from)
             continue;
 
-        // printf("dis : %.9f\n",dis);
-        // cout<<"int : "<<ii<<endl;
+        printf("dis : %f, mind : %f\n", dis, mind);
+        cout<<*e<<endl;
+        for (auto &is : edge_intervals[e]) 
+            cout<<is<<endl;
+        cout<<endl;
 
-        // if (ii.pos.length() - end < EPS)
-        // {
-        //     continue;
-        // }
-
-        // if (dis < mind) {
-        //     bf = ii;
-        //     best_x = temp_x;
-        //     mind = dis;
-        // }
-
-        if (dis < mind or (abs(dis - mind) < EPS and (ii.pos.length() - end > EPS))) {
+        if (dis < mind  or (abs(mind - dis) < EPS and ii.pos.y())) {
             bf = ii;
             best_x = temp_x;
             mind = dis;
@@ -106,8 +93,8 @@ vector<Point> MMP::trace_back(Point destination)
     while (true) {
 
         // check if cur_x and cur_itv
-        // cout<<"cur_x : "<<cur_x<<endl;
-        // cout<<"cur_itv : "<<cur_itv<<endl;
+        cout<<"cur_x : "<<cur_x<<endl;
+        cout<<"cur_itv : "<<cur_itv<<endl;
 
         path.push_back(Point(cur_itv.edge, cur_x / cur_itv.edge->length()));
         // cout<<"Path : "<<Point(cur_itv.edge, cur_x / cur_itv.edge->length()).pos<<endl;
@@ -123,22 +110,22 @@ vector<Point> MMP::trace_back(Point destination)
         }
         if ((Vector2(cur_x, 0) - cur_itv.pos).length() < EPS and abs(cur_x) < EPS) {
             // get the closest interval to this point
-            // cout<<"saddle "<<*cur_itv.edge->getEndpoint(0)<<endl;
-            // cout<<"finding"<<endl;
+            cout<<"saddle "<<*cur_itv.edge->getEndpoint(0)<<endl;
+            cout<<"finding"<<endl;
             best_first_saddle(cur_itv.edge->getEndpoint(0), cur_x, cur_itv);
-            // cout<<"after saddle 1"<<endl;
-            // cout<<"cur_sadd : "<<cur_x<<endl;
-            // cout<<"cur_itv_sad : "<<cur_itv<<endl;
+            cout<<"after saddle 1"<<endl;
+            cout<<"cur_sadd : "<<cur_x<<endl;
+            cout<<"cur_itv_sad : "<<cur_itv<<endl;
             continue;
         } else if ((Vector2(cur_x, 0) - cur_itv.pos).length() < EPS
                    and abs(cur_x - cur_itv.edge->length()) < EPS) {
-            // cout<<"saddle "<<*cur_itv.edge->getEndpoint(1)<<endl;
+            cout<<"saddle "<<*cur_itv.edge->getEndpoint(1)<<endl;
             // get the closest interval from this point
-            // cout<<"finding"<<endl;
+            cout<<"finding"<<endl;
             best_first_saddle(cur_itv.edge->getEndpoint(1), cur_x, cur_itv);
-            // cout<<"after saddle 2"<<endl;
-            // cout<<"cur_sadd : "<<cur_x<<endl;
-            // cout<<"cur_itv_sad : "<<cur_itv<<endl;
+            cout<<"after saddle 2"<<endl;
+            cout<<"cur_sadd : "<<cur_x<<endl;
+            cout<<"cur_itv_sad : "<<cur_itv<<endl;
             continue;
         }
 
