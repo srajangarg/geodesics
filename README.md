@@ -18,4 +18,5 @@ Bunny
 
 Beloved Homer
 
-<img src="/images/homer1.png" width="47%"> <img src="/images/homer2.png" width="47%">
+<img src="/images/homer1.png" width="95%"> 
+<img src="/images/homer2.png" width="95%">
